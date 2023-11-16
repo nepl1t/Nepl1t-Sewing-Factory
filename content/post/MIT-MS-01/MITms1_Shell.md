@@ -1,16 +1,16 @@
-+++
-title = 'MITMS01_课程概述与Shell'
-date = 2023-11-02 16:43:23+0800 
-draft = false
-math = true
-summary = "MIT Missing Semester 1, Course overview and the shell"
+---
+title : "MITMS01_课程概述与Shell"
+date : 2023-11-02 16:43:23+0800 
+draft : false
+math : true
+description : MIT Missing Semester 1, Course overview and the shell
 categories:
     - 学习笔记
     - CS
 tags:
     - MIT Missing Semester
     - Shell
-+++
+---
 打开终端如下图
 
 ![Alt text](Pasted%20image%2020231102192205.png)
