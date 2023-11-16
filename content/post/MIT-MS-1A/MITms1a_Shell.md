@@ -1,6 +1,6 @@
 +++
 title = 'MITMS01a_课程概述与Shell'
-date = 2023-11-03T22:15:08+08:00
+date = 2023-11-03 22:15:08+0800
 draft = false
 math = true
 summary = "Notes for exercises of MIT Missing Semester 1, Course overview and the shell"
