@@ -12,6 +12,12 @@ tags:
     - Shell
 ---
 
+```
+本文配置环境为 Ubuntu Linux 22.04.2 LTS 
+```
+
+## 正文
+
 1. 本课程需要使用类Unix shell，例如 Bash 或 ZSH。如果您在 Linux 或者 MacOS 上面完成本课程的练习，则不需要做任何特殊的操作。如果您使用的是 Windows，则您不应该使用 cmd 或是 Powershell；您可以使用Windows Subsystem for Linux或者是 Linux 虚拟机。使用echo $SHELL命令可以查看您的 shell 是否满足要求。如果打印结果为/bin/bash或/usr/bin/zsh则是可以的。
 2. 在 /tmp 下新建一个名为 missing 的文件夹。
 3. 用 man 查看程序 touch 的使用手册。<br>
@@ -125,15 +131,15 @@ GNU coreutils 9.1                January 2023                         TOUCH(1)
 
 以上步骤运行如图
 
-![Alt text](./image.png)
+![第1至4步](image.png)
 
-1. 将以下内容一行一行地写入 semester 文件：
+5. 将以下内容一行一行地写入 semester 文件：
 ```
 #!/bin/sh
 curl --head --silent https://missing.csail.mit.edu
 ```
 
-![](./image-1.png)
+![第5步](image-1.png)
 
 由图我们可以看到，直接写入的命令似乎没有作用，而双引号包括住要写入的第一行会让 shell 报错。
 
@@ -141,7 +147,7 @@ curl --head --silent https://missing.csail.mit.edu
 
 然后写入第二行命令，注意 `>` 的重定义效果是直接覆写，而 `>>` 才是追加内容：
 
-![Alt text](./image-2.png)
+![两个重定向符号的区别](image-2.png)
 
 注意到指令 `echo 'curl --head --silent https://missing.csail.mit.edu' > semester` 直接将 semester 文件的内容从 `#!bin/sh` 覆写成了 `curl --head --silent https://missing.csail.mit.edu` 
 
@@ -149,11 +155,11 @@ curl --head --silent https://missing.csail.mit.edu
 
 6. 尝试执行这个文件。例如，将该脚本的路径（./semester）输入到您的shell中并回车。如果程序无法执行，请使用 ls 命令来获取信息并理解其不能执行的原因。
 
-![](./image-3.png)
+![文件权限](image-3.png)
 
 `-rw-rw-r--` 告诉我们作为一个文件，我作为创建者（neplit）是只有读取和写入的权限，**但没有运行权限**。因此我们运行指令 `./semester` 是会报 access denied 的。
 
-![](./image-4.png)
+![ahoh](image-4.png)
 
 同时这也告诉我们 `touch` 指令创建的文件是不会给我们执行权限的，我们只有读取和写入权限。
 
@@ -174,7 +180,7 @@ NAME
 
 Linux/Unix 系统的文件调用权限分为三级：文件所有者、用户组与其他用户（这里上课笔记中有）
 
-![](./image-5.png)
+![文件权限图解](./image-5.png)
 
 ```
 SYNOPSIS
@@ -251,7 +257,7 @@ r 代表读取权， w 代表写入权， x 代表执行权。X为特殊执行�
 
 八进制表示是一个三位数。从前到后每一位数都代表了一类用户的文件权限（分别是u、g、o）。数值的确定规则如下：首先将三个不同的权限变成三个数值：4-r, 2-w, x-1。比如 rwx 代表 4+3+1=7, 其八进制表示则是7。r-x 代表 4+0+1=5， --- 代表 0+0+0=0。那么数值 750 就代表了 所有者拥有读取写入执行权、用户组用户拥有读取和执行权，其他用户没有任何权利。
 
-![Alt text](./image-6.png)
+![chmod参数图解](image-6.png)
 
 使用八进制表示来使用 `chmod` 命令的语法为：
 
@@ -296,13 +302,13 @@ chmod 771 file
 
 8. 使用 `chmod` 命令改变权限，使 `./semester` 能够成功执行，不要使用 `sh semester` 来执行该程序。（您的 shell 是如何知晓这个文件需要使用 sh 来解析呢？更多信息请参考：[shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) ）
 
-![Alt text](./image-7.png)
+![嗯](image-7.png)
 
 9. 使用 | 和 > ，将 semester 文件输出的最后更改日期信息，写入主目录下的 last-modified.txt 的文件中
 
 semester 文件输出的最后更改日期信息（last-modified） 可以利用 `grep` 命令寻找。
 
-![](./image-8.png)
+![哈](./image-8.png)
 
 9. 写一段命令来从 /sys 中获取笔记本的电量信息，或者台式机 CPU 的温度。注意：macOS 并没有 sysfs，所以 Mac 用户可以跳过这一题。
 
@@ -311,6 +317,6 @@ solution：
 - 创建一个文件名为 `now_battery_capa`，其内容为 `cat /sys/class/power_supply/BAT1/capacity` 。
 - 将其权限设为可执行
 
-![Alt text](./image-9.png)
+![笔记本电量100](image-9.png)
 
 可以看出现在笔记本电量为100.
