@@ -310,7 +310,7 @@ semester 文件输出的最后更改日期信息（last-modified） 可以利用
 
 ![哈](./image-8.png)
 
-9. 写一段命令来从 /sys 中获取笔记本的电量信息，或者台式机 CPU 的温度。注意：macOS 并没有 sysfs，所以 Mac 用户可以跳过这一题。
+10. 写一段命令来从 /sys 中获取笔记本的电量信息，或者台式机 CPU 的温度。注意：macOS 并没有 sysfs，所以 Mac 用户可以跳过这一题。
 
 solution：
 
