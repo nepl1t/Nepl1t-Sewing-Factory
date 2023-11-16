@@ -2,7 +2,7 @@
 title: "First"
 description: "只要心在跳动，就还有血的潮汐"
 date: 2023-10-27 08:27:04+0800
-image: cover.jpg
+image: "https://smms.app/image/5pNg9fCPYueikoW"
 math: true
 weight: 1       # You can add weight to some posts to override the default sorting (date descending)
 hidden: false
