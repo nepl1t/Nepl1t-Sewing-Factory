@@ -1,6 +1,6 @@
 ---
 title: "《论道德的谱系》读书笔记 01"
-description: "导言" 
+description: "Page 1-13，导言" 
 date: 2023-11-22 04:12:07+0800
 image: "https://s2.loli.net/2023/11/22/qnB4xvspbQUEVaN.png"
 math: false
