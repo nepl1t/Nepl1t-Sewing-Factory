@@ -1,6 +1,6 @@
 ---
 title: "《论道德的谱系》读书笔记 01"
-description: "Page 1-13，导言" 
+description: "Page 1-13，导言。尼采在本书中的道德批评在其序言对人类有限性的论述中就可以窥知一二了……" 
 date: 2023-11-22 04:12:07+0800
 image: "https://s2.loli.net/2023/11/22/qnB4xvspbQUEVaN.png"
 math: false
