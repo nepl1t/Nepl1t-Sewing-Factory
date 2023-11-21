@@ -20,7 +20,7 @@ tags:
 
 1. 本课程需要使用类Unix shell，例如 Bash 或 ZSH。如果您在 Linux 或者 MacOS 上面完成本课程的练习，则不需要做任何特殊的操作。如果您使用的是 Windows，则您不应该使用 cmd 或是 Powershell；您可以使用Windows Subsystem for Linux或者是 Linux 虚拟机。使用echo $SHELL命令可以查看您的 shell 是否满足要求。如果打印结果为/bin/bash或/usr/bin/zsh则是可以的。
 2. 在 /tmp 下新建一个名为 missing 的文件夹。
-3. 用 man 查看程序 touch 的使用手册。<br>
+3. 用 man 查看程序 touch 的使用手册
 
 ---
 ### touch命令
@@ -40,6 +40,7 @@ DESCRIPTION
        Update  the  access  and modification times of each FILE to the current
        time.
 ```
+
 `touch` 程序的用途是，其基本语法是 `touch [OPTION]... FILE...` ，可以将 `FILE` 文件的访问时间、修改时间改成当前系统时间。
 
 
@@ -134,6 +135,7 @@ GNU coreutils 9.1                January 2023                         TOUCH(1)
 ![第1至4步](image.png)
 
 5. 将以下内容一行一行地写入 semester 文件：
+
 ```
 #!/bin/sh
 curl --head --silent https://missing.csail.mit.edu

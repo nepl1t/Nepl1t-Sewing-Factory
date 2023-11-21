@@ -58,7 +58,7 @@ tags:
 
 ![which命令的使用](https://s2.loli.net/2023/11/19/u1cHqRL6dMaWoGm.png)
 
-即运行的 `echo` 程序位于 `/usr/bin/echo` 
+即运行的 `echo` 程序位于 `/usr/bin/echo`
 
 在Windows上，每个分区都有一个根目录，每个分区都有一个单独的路径结构： `C:\` `D:\`，而这样的路径用**反斜杠**分割
 
