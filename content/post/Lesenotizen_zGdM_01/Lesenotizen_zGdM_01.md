@@ -8,6 +8,12 @@ license:
 hidden: false
 comments: true
 draft: false
+categories:
+    - 随笔
+    - 读书感想
+tags:
+    - 哲学
+    - 尼采
 ---
 
 ```

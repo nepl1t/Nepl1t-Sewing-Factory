@@ -4,6 +4,14 @@ description: 与其说是一个“冷静旁观的介入者”，雷蒙·阿隆�
 date: 2024-01-17 11:14:25+0800
 image: https://tse1-mm.cn.bing.net/th/id/OIP-C.txr2PFDLpE7uIBsfYge5kQHaEz?rs=1&pid=ImgDetMain
 draft: false
+hidden: false
+comments: true
+categories:
+    - 随笔
+    - 读书感想
+tags:
+    - 鉴证
+    - 雷蒙·阿隆
 ---
 
 
