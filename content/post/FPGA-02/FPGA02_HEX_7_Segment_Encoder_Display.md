@@ -103,7 +103,7 @@ module MyMC14495_tb();
     wire f;
     wire g;
 
-    MyMC14495  simu_MC14495(EN.(EN), 
+    MyMC14495  simu_MC14495(.EN(EN), 
                             .I0(I[0]), 
                             .I1(I[1]), 
                             .I2(I[2]), 
