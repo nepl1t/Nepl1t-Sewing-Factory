@@ -2,7 +2,7 @@
 baseurl = "https://nepl1t.github.io"
 languageCode = "zh-CN"
 paginate = 5
-title = "Nepl1t Sewing Factory"
+title = "灯盐的缝纫工厂"
 
 # Theme i18n support
 # Available values: en, fr, id, ja, ko, pt-br, zh-cn, zh-tw, es, de, nl, it, th, el, uk, ar
