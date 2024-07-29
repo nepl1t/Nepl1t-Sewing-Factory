@@ -17,9 +17,9 @@ tags:
 > 
 > 该界面内提到的任何代码与原程序都可在 https://github.com/nepl1t/nepl1t.github.io/tree/master/assets 内找到
 
-# Task1 ropbasic
+## Task1 ropbasic
 
-#### Preparation
+### Preparation
 
 首先 `checksec` 一下程序，保护全开。 ROPgadget 只能找到一个 gadget：
 
@@ -60,7 +60,7 @@ int __fastcall main(int argc, const char **argv, const char **envp)
 
 `s` 相对 rbp 的偏移地址为 `0x110`，考虑到程序开了 Canary，因此当务之急就是将其泄漏出来，否则栈溢出泄漏 libc 就无从说起。
 
-#### Leaking Canary
+### Leaking Canary
 
 根据代码知道，使用 gdb 停到 call memset 时：
 
@@ -146,7 +146,7 @@ log.info("Canary:"+hex(Canary))
 
 程序没有检测到栈溢出，而是正常退出，这说明 Canary 成功泄漏并绕过了。
 
-#### Leaking libc addr
+### Leaking libc addr
 
 由于开了 PIE，每次运行的基址都不一样，所以每次栈溢出 ROP 之前，都需要得到 libc 的地址。通过 `objdump -d` 可以发现程序里确实是有 `libc_start_main()` 的符号，我们可以找到它的地址，再减去其在 libc 中的偏移地址，从而得到 libc 地址。
 
@@ -212,7 +212,7 @@ b&apos;\x90\x9d\xc2B8w\x00\x00&apos;
 
 得到 libc 的地址为 ` 0x0000773842C00000`
 
-#### Getting system shell
+### Getting system shell
 
 已经知道了 libc 的地址，那就从 libc 里面找 gadget：`ROPgadget --binary ./libc.so.6 --only "pop|ret"` 
 
@@ -251,7 +251,7 @@ conn.interactive()
 
 成功获得 flag 为 `AAA{oh_R0P_1s_b4b@b4b@s1c~}`
 
-#### Approach 2 ORW
+### Approach 2 ORW
 
 ORW 即 `open(file, olfag)` `read(fd, buf, n_bytes)` 与 `write(fd, buf, n_bytes)` 。
 
@@ -275,11 +275,11 @@ ORW 即 `open(file, olfag)` `read(fd, buf, n_bytes)` 与 `write(fd, buf, n_bytes
 
 对于调用 `read(rdi -> 3, rsi -> oflag)` ，
 
-# Task2 onerop
+## Task2 onerop
 
 本题目的完整代码为 attachment 中的 `pwnlab2_task2_code.py`
 
-#### Preparation & Leaking libc addr
+### Preparation & Leaking libc addr
 
 `checksec` 一下，没有开 PIE 与 Canary，感觉比第一题友好多了，用 IDA 编译出来的 `main()` 也是十分简单：
 
@@ -363,7 +363,7 @@ log.info("libc_addr => 0x{:016X}".format(libc_addr))
 
 可以看到获取的 libc 地址为 `0x00007F6506C9D000`
 
-#### Getting system shell
+### Getting system shell
 
 最后，按如下构造 payload ，可以获取 shell：
 
@@ -385,11 +385,11 @@ conn.interactive()
 
 得到 flag 为 `AAA{r0p_oN3_5Im3_ROP_f0r3ve3}` 
 
-# Task3 onefsb
+## Task3 onefsb
 
 本题目的完整代码为 attachment 中的 `pwnlab2_task3_code.py`
 
-#### Preparation
+### Preparation
 
 checksec 一下，是关闭了 PIE 保护，同时打开的 Partial RELRO 的 64 位程序，注意到开了 Canary，栈溢出要小心点。
 
@@ -428,7 +428,7 @@ IDA 反编译一下，`main()` 基本逻辑是这样的：
 
 第三次，就是将 `puts_got` 覆写成 one_gadget ，对我言听计从 😤😤😤
 
-#### Getting offsets
+### Getting offsets
 
 首先打开程序，确定格式化字符串的相对偏移。打开程序，输入 `AAAAAAAA.%p.%p.%p.%p.%p.%p.%p.%p.%p.%p.%p.%p.%p.%p.%p.%p.%p.%p.%p` ，结果如下：
 
@@ -469,7 +469,7 @@ IDA 反编译一下，`main()` 基本逻辑是这样的：
 
 可以看到，输入的格式字符串 `AAAAAAAA` 位于栈的第二位，由于此时位于 `printf()` 函数内， **栈的最顶部 rbp 指向的是 `printf()` 的返回地址，所以不算做参数**，同时由于是 64 位程序，前六个参数在寄存器内，所以格式字符串就是 `printf()` 的第七个参数，也就是格式化字符串（ rdi ）后的第六个偏移。
 
-#### Hijacking control flow
+### Hijacking control flow
 
 首先就是拿下 `puts()` ，像这样构建 payload ：
 
@@ -490,7 +490,7 @@ conn.interactive()
 
 ![image-20240728224258130.png](https://s2.loli.net/2024/07/29/jsaKU3qtSnzMcm2.png)
 
-#### Leaking libc address
+### Leaking libc address
 
 有了前面两道 Task 的经验，这次 leak 可以算很顺利了：
 
@@ -514,7 +514,7 @@ conn.interactive()
 
 可以看到最终得到的 libc 地址为 `0x00007F3EDFC00000`
 
-#### Getting system shell
+### Getting system shell
 
 ```python
 # Third payload: getting system shell
@@ -533,11 +533,11 @@ conn.interactive()
 
 成功获取 shell 的控制权。最终得到 flag 为 `AAA{i_l0v3_fmtstr_payload_H0p3_u_Loveit_2}` ，然而我自我感觉也许可能不会很 love it :D 卡了我两天（怨）
 
-# Task4 fsb-stack
+## Task4 fsb-stack
 
 本题目的完整代码为 attachment 中的 `pwnlab2_task4_code.py`
 
-#### Preparation
+### Preparation
 
 `checksec` 一下，除了 Canary 以外保护全开（在 IDA 里反汇编也没看到 stack_check_fail ）。 `main()` 反编译后的代码如下：
 
@@ -568,7 +568,7 @@ int __fastcall __noreturn main(int argc, const char **argv, const char **envp)
 
 但是打开了 FULL RELRO ，不能覆写 GOT 表，所以试试 ROP，利用格式字符串任意位置泄漏栈地址，然后利用任意写将 `printf()` 的返回地址设为 one_gadget。
 
-#### Leaking libc address
+### Leaking libc address
 
 通过 gdb 动态调试，断点进入 `printf()` 内，在栈中寻找到 `main()` 的返回地址相对于格式字符串的偏移位置。首先来看 Backtrace ，确定 `printf()` 的返回地址为 `0x55555555528d` ，位于 `main()` 内，则 `main()` 的返回地址为 `0x7ffff7c29d90` ，而 `0x7ffff7c29e40` 相对 `__libc_start_main` 的偏移是 +128 ，所以 `__libc_start_main` 相对  `main()` 的返回地址 的偏移是 (-0xd90 + 0xe40) - 128 = +0x30 。
 
@@ -627,7 +627,7 @@ conn.interactive()
 
 获得 libc 地址为 `0x000079FB95A00000`
 
-#### Leaking stack address
+### Leaking stack address
 
 由于栈之间的相对偏移应该不变，所以应该可以通过找到一个链：栈上一个位置 A ，其指向栈的另一个位置 B ，找到 A 、 B 其关于格式字符串的偏移位置。然后利用 `printf() %x` 向 B 的地址漏出来，因此就可以找出 rsp 的地址，最后就可以将 printf_ret_addr 改写成 one_gadget。
 
@@ -675,7 +675,7 @@ conn.interactive()
 
 获得 `printf()` 栈基址为 `0x00007FFF27F65378`
 
-#### Hijacking printf() return addr & getting system shell 
+### Hijacking printf() return addr & getting system shell 
 
 编写如下 payload 以执行 system call shell 并获取flag:
 
