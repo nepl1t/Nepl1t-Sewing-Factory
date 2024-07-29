@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>作业笔记 on 灯盐的缝纫工厂</title><link>https://nepl1t.github.io/categories/%E4%BD%9C%E4%B8%9A%E7%AC%94%E8%AE%B0/</link><description>Recent content in 作业笔记 on 灯盐的缝纫工厂</description><generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Fri, 03 Nov 2023 22:15:08 +0800</lastBuildDate><atom:link href="https://nepl1t.github.io/categories/%E4%BD%9C%E4%B8%9A%E7%AC%94%E8%AE%B0/index.xml" rel="self" type="application/rss+xml"/><item><title>MITMS01a_课程概述与Shell</title><link>https://nepl1t.github.io/p/mitms01a_%E8%AF%BE%E7%A8%8B%E6%A6%82%E8%BF%B0%E4%B8%8Eshell/</link><pubDate>Fri, 03 Nov 2023 22:15:08 +0800</pubDate><guid>https://nepl1t.github.io/p/mitms01a_%E8%AF%BE%E7%A8%8B%E6%A6%82%E8%BF%B0%E4%B8%8Eshell/</guid><description>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">本文配置环境为 Ubuntu Linux 22.04.2 LTS
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="正文">正文
+&lt;/h2>&lt;ol>
+&lt;li>本课程需要使用类Unix shell，例如 Bash 或 ZSH。如果您在 Linux 或者 MacOS 上面完成本课程的练习，则不需要做任何特殊的操作。如果您使用的是 Windows，则您不应该使用 cmd 或是 Powershell；您可以使用Windows Subsystem for Linux或者是 Linux 虚拟机。使用echo $SHELL命令可以查看您的 shell 是否满足要求。如果打印结果为/bin/bash或/usr/bin/zsh则是可以的。&lt;/li>
+&lt;li>在 /tmp 下新建一个名为 missing 的文件夹。&lt;/li>
+&lt;li>用 man 查看程序 touch 的使用手册&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h3 id="touch命令">touch命令
+&lt;/h3>&lt;p>&lt;code>touch&lt;/code> 的使用手册分解如下：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">TOUCH(1) User Commands TOUCH(1)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">NAME
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> touch - change file timestamps
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">SYNOPSIS
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> touch [OPTION]... FILE...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">DESCRIPTION
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> Update the access and modification times of each FILE to the current
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> time.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;code>touch&lt;/code> 程序的用途是，其基本语法是 &lt;code>touch [OPTION]... FILE...&lt;/code> ，可以将 &lt;code>FILE&lt;/code> 文件的访问时间、修改时间改成当前系统时间。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl"> A FILE argument that does not exist is created empty, unless -c or -h
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> is supplied.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> A FILE argument string of - is handled specially and causes touch to
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> change the times of the file associated with standard output.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> Mandatory arguments to long options are mandatory for short options
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> too.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>如果指定的 &lt;code>FILE&lt;/code> 文件并不存在，程序将会创建一个新的 &lt;code>FILE&lt;/code> 文件，除非 &lt;code>[OPTION]&lt;/code> 中使用了 &lt;code>-c&lt;/code> &lt;code>-h&lt;/code> 等参数。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;span class="lnt">29
+&lt;/span>&lt;span class="lnt">30
+&lt;/span>&lt;span class="lnt">31
+&lt;/span>&lt;span class="lnt">32
+&lt;/span>&lt;span class="lnt">33
+&lt;/span>&lt;span class="lnt">34
+&lt;/span>&lt;span class="lnt">35
+&lt;/span>&lt;span class="lnt">36
+&lt;/span>&lt;span class="lnt">37
+&lt;/span>&lt;span class="lnt">38
+&lt;/span>&lt;span class="lnt">39
+&lt;/span>&lt;span class="lnt">40
+&lt;/span>&lt;span class="lnt">41
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl"> -a change only the access time
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> -c, --no-create
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> do not create any files
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> -d, --date=STRING
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> parse STRING and use it instead of current time
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> -f (ignored)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> -h, --no-dereference
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> affect each symbolic link instead of any referenced file (useful
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> only on systems that can change the timestamps of a symlink)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> -m change only the modification time
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> -r, --reference=FILE
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> use this file&amp;#39;s times instead of current time
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> -t STAMP
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> use [[CC]YY]MMDDhhmm[.ss] instead of current time
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> --time=WORD
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> change the specified time: WORD is access, atime, or use: equiv‐
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> alent to -a WORD is modify or mtime: equivalent to -m
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> --help display this help and exit
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> --version
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> output version information and exit
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> Note that the -d and -t options accept different time-date formats.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">DATE STRING
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> The --date=STRING is a mostly free format human readable date string
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> such as &amp;#34;Sun, 29 Feb 2004 16:21:42 -0800&amp;#34; or &amp;#34;2004-02-29 16:21:42&amp;#34; or
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> even &amp;#34;next Thursday&amp;#34;. A date string may contain items indicating cal‐
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> endar date, time of day, time zone, day of week, relative time, rela‐
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> tive date, and numbers. An empty string indicates the beginning of the
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> day. The date string format is more complex than is easily documented
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> here but is fully described in the info documentation.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">AUTHOR
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> Written by Paul Rubin, Arnold Robbins, Jim Kingdon, David MacKenzie,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> and Randy Smith.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">REPORTING BUGS
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> GNU coreutils online help: &amp;lt;https://www.gnu.org/software/coreutils/&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> Report any translation bugs to &amp;lt;https://translationproject.org/team/&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">COPYRIGHT
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> Copyright © 2022 Free Software Foundation, Inc. License GPLv3+: GNU
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> GPL version 3 or later &amp;lt;https://gnu.org/licenses/gpl.html&amp;gt;.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> This is free software: you are free to change and redistribute it.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> There is NO WARRANTY, to the extent permitted by law.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">SEE ALSO
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> Full documentation &amp;lt;https://www.gnu.org/software/coreutils/touch&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> or available locally via: info &amp;#39;(coreutils) touch invocation&amp;#39;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">GNU coreutils 9.1 January 2023 TOUCH(1)
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>这一栏则列出了 &lt;code>touch&lt;/code> 程序的作者、反馈方式、版权信息等其他信息。&lt;/p>
+&lt;hr>
+&lt;ol start="4">
+&lt;li>用 touch 在 missing 文件夹中新建一个叫 semester 的文件。&lt;/li>
+&lt;/ol>
+&lt;p>以上步骤运行如图&lt;/p>
+&lt;p>&lt;img src="https://nepl1t.github.io/image.png"
+loading="lazy"
+alt="第1至4步"
+>&lt;/p>
+&lt;ol start="5">
+&lt;li>将以下内容一行一行地写入 semester 文件：&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">&lt;span class="cp">#!/bin/sh
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="cp">&lt;/span>curl --head --silent https://missing.csail.mit.edu
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;img src="https://nepl1t.github.io/image-1.png"
+loading="lazy"
+alt="第5步"
+>&lt;/p>
+&lt;p>由图我们可以看到，直接写入的命令似乎没有作用，而双引号包括住要写入的第一行会让 shell 报错。&lt;/p>
+&lt;p>只有命令 &lt;code>echo ‘#!/bin/sh’ &amp;gt; semester&lt;/code> 起到了作用。因为 &lt;code>#&lt;/code> 在Bash中表示注释，而 ! 即使被双引号（&amp;quot;）包裹也具有特殊的含义。 &lt;strong>单引号（&amp;rsquo;）则不一样，此处利用这一点解决输入问题。&lt;/strong>（更多信息请参考 &lt;a class="link" href="https://www.gnu.org/software/bash/manual/html_node/Quoting.html" target="_blank" rel="noopener"
+>Bash quoting 手册&lt;/a>）&lt;/p>
+&lt;p>然后写入第二行命令，注意 &lt;code>&amp;gt;&lt;/code> 的重定义效果是直接覆写，而 &lt;code>&amp;gt;&amp;gt;&lt;/code> 才是追加内容：&lt;/p>
+&lt;p>&lt;img src="https://nepl1t.github.io/image-2.png"
+loading="lazy"
+alt="两个重定向符号的区别"
+>&lt;/p>
+&lt;p>注意到指令 &lt;code>echo 'curl --head --silent https://missing.csail.mit.edu' &amp;gt; semester&lt;/code> 直接将 semester 文件的内容从 &lt;code>#!bin/sh&lt;/code> 覆写成了 &lt;code>curl --head --silent https://missing.csail.mit.edu&lt;/code>&lt;/p>
+&lt;p>而 将 &lt;code>&amp;gt;&lt;/code> 改为 &lt;code>&amp;gt;&amp;gt;&lt;/code> 才可以&lt;em>另起一行&lt;/em>并追加内容&lt;/p>
+&lt;ol start="6">
+&lt;li>尝试执行这个文件。例如，将该脚本的路径（./semester）输入到您的shell中并回车。如果程序无法执行，请使用 ls 命令来获取信息并理解其不能执行的原因。&lt;/li>
+&lt;/ol>
+&lt;p>&lt;img src="https://nepl1t.github.io/image-3.png"
+loading="lazy"
+alt="文件权限"
+>&lt;/p>
+&lt;p>&lt;code>-rw-rw-r--&lt;/code> 告诉我们作为一个文件，我作为创建者（neplit）是只有读取和写入的权限，&lt;strong>但没有运行权限&lt;/strong>。因此我们运行指令 &lt;code>./semester&lt;/code> 是会报 access denied 的。&lt;/p>
+&lt;p>&lt;img src="https://nepl1t.github.io/image-4.png"
+loading="lazy"
+alt="ahoh"
+>&lt;/p>
+&lt;p>同时这也告诉我们 &lt;code>touch&lt;/code> 指令创建的文件是不会给我们执行权限的，我们只有读取和写入权限。&lt;/p>
+&lt;ol start="7">
+&lt;li>查看 &lt;code>chmod&lt;/code> 的手册(例如，使用 &lt;code>man chmod&lt;/code> 命令)&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h3 id="chmod命令">chmod命令
+&lt;/h3>&lt;p>&lt;code>chmod&lt;/code> 的使用手册分解如下：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">NAME
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> chmod - change file mode bits
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>其表明 &lt;code>chmod&lt;/code> 命令用于修改文件的权限模式。&lt;/p>
+&lt;p>Linux/Unix 系统的文件调用权限分为三级：文件所有者、用户组与其他用户（这里上课笔记中有）&lt;/p>
+&lt;p>&lt;img src="https://nepl1t.github.io/image-5.png"
+loading="lazy"
+alt="文件权限图解"
+>&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;span class="lnt">9
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">SYNOPSIS
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> chmod [OPTION]... MODE[,MODE]... FILE...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> chmod [OPTION]... OCTAL-MODE FILE...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> chmod [OPTION]... --reference=RFILE FILE...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">DESCRIPTION
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> This manual page documents the GNU version of chmod. chmod changes the file mode bits of
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> each given file according to mode, which can be either a symbolic representation of
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> changes to make, or an octal number representing the bit pattern for the new mode bits.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;code>chmod&lt;/code> 命令的基本语法是 &lt;code>chmod [OPTION] MODE[,MODE] FILE&lt;/code> 。其中的 &lt;code>MODE&lt;/code> 是该命令用于更改文件权限的依据（chmod changes the file mode bits of each given file according to mode），其可以使用&lt;strong>符号表示&lt;/strong>（Symbolic representation）或者&lt;strong>八进制数表示&lt;/strong>（an octal number representing the bit pattern for the new mode bits）。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl"> The format of a symbolic mode is [ugoa...][[-+=][perms...]...], where perms is either zero
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> or more letters from the set rwxXst, or a single letter from the set ugo. Multiple sym‐
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> bolic modes can be given, separated by commas.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;strong>符号表示&lt;/strong> 的基本格式是 &lt;code>[ugoa...][[-+=][perms...]...]&lt;/code>&lt;/p>
+&lt;p>如果要同时根据多个符号表示来修改文件权限，不同的符号表示之间可以用逗号分隔开，如下面的指令将两个符号表示 &lt;code>u+r&lt;/code> 与 &lt;code>go-r&lt;/code>分开来：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">chmod u+r,go-r docs
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>该指令修改了文件 docs 的权限：所有者获得了读取权限，而除所有者外其他用户都失去了读取权限。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-zed" data-lang="zed">&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">A&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">combination&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">of&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">the&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">letters&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">ugoa&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">controls&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">which&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">users&lt;/span>&lt;span class="err">&amp;#39;&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">access&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">to&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">the&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">file&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">will&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">be&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">changed&lt;/span>&lt;span class="o">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">the&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">user&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">who&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">owns&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">it&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">u&lt;/span>&lt;span class="p">),&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">other&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">users&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">in&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">the&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">file&lt;/span>&lt;span class="err">&amp;#39;&lt;/span>&lt;span class="n">s&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">group&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">g&lt;/span>&lt;span class="p">),&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">other&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">users&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">not&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">in&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">the&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">file&lt;/span>&lt;span class="err">&amp;#39;&lt;/span>&lt;span class="n">s&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">group&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">o&lt;/span>&lt;span class="p">),&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">or&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">all&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">users&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">a&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">If&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">none&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">of&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">these&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">are&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">given&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">the&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">effect&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">is&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">as&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">if&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">a&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">were&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">given&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">but&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">bits&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">that&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">are&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">set&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">in&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">the&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">umask&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">are&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">not&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">affected&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">The&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">operator&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">+&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">causes&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">the&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">selected&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">file&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">mode&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">bits&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">to&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">be&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">added&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">to&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">the&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">existing&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">file&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">mode&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">bits&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">of&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">each&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">file&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">causes&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">them&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">to&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">be&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">removed&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">and&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">causes&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">them&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">to&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">be&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">added&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">and&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">causes&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">unmentioned&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">bits&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">to&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">be&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">removed&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">except&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">that&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">a&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">directory&lt;/span>&lt;span class="err">&amp;#39;&lt;/span>&lt;span class="n">s&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">unmentioned&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">set&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">user&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">and&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">group&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">ID&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">bits&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">are&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">not&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">affected&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">The&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">letters&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">rwxXst&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">select&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">file&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">mode&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">bits&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">for&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">the&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">affected&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">users&lt;/span>&lt;span class="o">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">read&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">r&lt;/span>&lt;span class="p">),&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">write&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">w&lt;/span>&lt;span class="p">),&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">exe&lt;/span>&lt;span class="err">‐&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">cute&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">or&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">search&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">for&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">directories&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">x&lt;/span>&lt;span class="p">),&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nn">execute/&lt;/span>&lt;span class="n">search&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">only&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">if&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">the&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">file&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">is&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">a&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">directory&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">or&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">already&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">has&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">execute&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kd">permission&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">for&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">some&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">user&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">X&lt;/span>&lt;span class="p">),&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">set&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">user&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">or&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">group&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">ID&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">on&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">execution&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">s&lt;/span>&lt;span class="p">),&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">restricted&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">deletion&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">flag&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">or&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">sticky&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">bit&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">t&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Instead&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">of&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">one&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">or&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">more&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">of&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">these&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">letters&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">you&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">can&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">specify&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">exactly&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">one&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">of&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">the&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">letters&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">ugo&lt;/span>&lt;span class="o">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">the&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">permissions&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">granted&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">to&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">the&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">user&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">who&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">owns&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">the&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">file&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">u&lt;/span>&lt;span class="p">),&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">the&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">permissions&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">granted&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">to&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">other&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">users&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">who&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">are&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">members&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">of&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">the&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">file&lt;/span>&lt;span class="err">&amp;#39;&lt;/span>&lt;span class="n">s&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">group&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">g&lt;/span>&lt;span class="p">),&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">and&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">the&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">permissions&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">granted&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">to&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">users&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">that&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">are&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">in&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">neither&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">of&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">the&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">two&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">preceding&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">cate&lt;/span>&lt;span class="err">‐&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">gories&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">o&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>&lt;code>ugoa&lt;/code> 表示要修改的是哪一类用户的文件权限，其中 u 代表 &lt;em>user 文件所有者&lt;/em>、 g 代表 &lt;em>group 用户组内成员&lt;/em>、o 代表 &lt;em>others 其他用户&lt;/em>， 而 a 代表 &lt;em>all 所有用户&lt;/em> 。 [ugoa] 的方括号告诉我们这一部分可以省略，而 &lt;strong>省略则默认修改所有人的权限&lt;/strong> 。&lt;/p>
+&lt;p>&lt;code>[-+=]&lt;/code> 表示要以何种方式修改文件权限。 - 代表删除某权限， + 代表追加某权限 &lt;em>而不影响其他权限&lt;/em>， = 代表直接设置成某权限 &lt;strong>并删除其他权限&lt;/strong>。 比如 -r（删除读取权限）、 +w（增加写入权限）、=r（设置成只可读权限，即增加读取权限，删除执行与写入权限）&lt;/p>
+&lt;p>&lt;code>[perms]&lt;/code> 即 permissions，代表要设置的是什么权限：从 字符集&lt;code>rwxXst&lt;/code> 中选择。&lt;/p>
+&lt;p>r 代表读取权， w 代表写入权， x 代表执行权。X为特殊执行权限：只有当文件为目录文件，或者其他类型的用户有可执行权限时，才将文件权限设置可执行。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl"> A numeric mode is from one to four octal digits (0-7), derived by adding up the bits with
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> values 4, 2, and 1. Omitted digits are assumed to be leading zeros. The first digit se‐
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> lects the set user ID (4) and set group ID (2) and restricted deletion or sticky (1) at‐
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> tributes. The second digit selects permissions for the user who owns the file: read (4),
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> write (2), and execute (1); the third selects permissions for other users in the file&amp;#39;s
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> group, with the same values; and the fourth for other users not in the file&amp;#39;s group, with
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> the same values.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>八进制表示是一个三位数。从前到后每一位数都代表了一类用户的文件权限（分别是u、g、o）。数值的确定规则如下：首先将三个不同的权限变成三个数值：4-r, 2-w, x-1。比如 rwx 代表 4+3+1=7, 其八进制表示则是7。r-x 代表 4+0+1=5， &amp;mdash; 代表 0+0+0=0。那么数值 750 就代表了 所有者拥有读取写入执行权、用户组用户拥有读取和执行权，其他用户没有任何权利。&lt;/p>
+&lt;p>&lt;img src="https://nepl1t.github.io/image-6.png"
+loading="lazy"
+alt="chmod参数图解"
+>&lt;/p>
+&lt;p>使用八进制表示来使用 &lt;code>chmod&lt;/code> 命令的语法为：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">chmod abc file
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>其中a,b,c各为一个数字，分别表示User、Group、及Other的权限。&lt;/p>
+&lt;p>r=4，w=2，x=1&lt;/p>
+&lt;p>若要 rwx 属性则 4+2+1=7；&lt;/p>
+&lt;p>若要 rw- 属性则 4+2=6；&lt;/p>
+&lt;p>若要 r-x 属性则 4+1=5。&lt;/p>
+&lt;p>例如&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">chmod a=rwx file
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">chmod =rwx file
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">chmod 777 file
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>效果相同，都是将 file 的权限都设为 &lt;code>rwxrwxrwx&lt;/code> 。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">chmod ug=rwx,o=x file
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">chmod 771 file
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>效果相同，都是将 file 的权限设置为 &lt;code>rwxrwx--x&lt;/code>。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl"> chmod never changes the permissions of symbolic links; the chmod system call cannot change
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> their permissions. This is not a problem since the permissions of symbolic links are
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> never used. However, for each symbolic link listed on the command line, chmod changes the
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> permissions of the pointed-to file. In contrast, chmod ignores symbolic links encountered
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> during recursive directory traversals.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;hr>
+&lt;ol start="8">
+&lt;li>使用 &lt;code>chmod&lt;/code> 命令改变权限，使 &lt;code>./semester&lt;/code> 能够成功执行，不要使用 &lt;code>sh semester&lt;/code> 来执行该程序。（您的 shell 是如何知晓这个文件需要使用 sh 来解析呢？更多信息请参考：&lt;a class="link" href="https://en.wikipedia.org/wiki/Shebang_%28Unix%29" target="_blank" rel="noopener"
+>shebang&lt;/a> ）&lt;/li>
+&lt;/ol>
+&lt;p>&lt;img src="https://nepl1t.github.io/image-7.png"
+loading="lazy"
+alt="嗯"
+>&lt;/p>
+&lt;ol start="9">
+&lt;li>使用 | 和 &amp;gt; ，将 semester 文件输出的最后更改日期信息，写入主目录下的 last-modified.txt 的文件中&lt;/li>
+&lt;/ol>
+&lt;p>semester 文件输出的最后更改日期信息（last-modified） 可以利用 &lt;code>grep&lt;/code> 命令寻找。&lt;/p>
+&lt;p>&lt;img src="https://nepl1t.github.io/image-8.png"
+loading="lazy"
+alt="哈"
+>&lt;/p>
+&lt;ol start="10">
+&lt;li>写一段命令来从 /sys 中获取笔记本的电量信息，或者台式机 CPU 的温度。注意：macOS 并没有 sysfs，所以 Mac 用户可以跳过这一题。&lt;/li>
+&lt;/ol>
+&lt;p>solution：&lt;/p>
+&lt;ul>
+&lt;li>创建一个文件名为 &lt;code>now_battery_capa&lt;/code>，其内容为 &lt;code>cat /sys/class/power_supply/BAT1/capacity&lt;/code> 。&lt;/li>
+&lt;li>将其权限设为可执行&lt;/li>
+&lt;/ul>
+&lt;p>&lt;img src="https://nepl1t.github.io/image-9.png"
+loading="lazy"
+alt="笔记本电量100"
+>&lt;/p>
+&lt;p>可以看出现在笔记本电量为100.&lt;/p></description></item></channel></rss>
