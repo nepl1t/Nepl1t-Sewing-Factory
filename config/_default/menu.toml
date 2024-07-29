@@ -8,6 +8,14 @@
 #newtab = true
 
 [[social]]
+identifier = "Bilibili"
+name = "Bilibili"
+url = "https://space.bilibili.com/3546607700150839"
+
+[social.params]
+icon = "brand-bilibili"
+
+[[social]]
 identifier = "github"
 name = "GitHub"
 url = "https://github.com/nepl1t"
@@ -16,9 +24,9 @@ url = "https://github.com/nepl1t"
 icon = "brand-github"
 
 [[social]]
-identifier = "twitter"
-name = "Twitter"
-url = "https://twitter.com/lithokz"
+identifier = "steam"
+name = "Steam"
+url = "https://steamcommunity.com/id/_DYanLiAst/"
 
 [social.params]
-icon = "brand-twitter"
+icon = "brand-steam"
